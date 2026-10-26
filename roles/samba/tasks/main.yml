@@ -1,2 +1,45 @@
-# Entrada para Samba.
-# Debe coordinar instalación, configuración, usuarios y directorios tras accounts.
+---
+- name: 1. Instalar paquetes de Samba
+  community.general.zypper:
+    name:
+      - samba
+      - samba-client
+    state: present
+
+- name: 2. Crear carpeta compartida /opt/archives
+  ansible.builtin.file:
+    path: /opt/archives
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: '0777'
+
+- name: 3. Asegurar que el usuario existe en Linux
+  ansible.builtin.user:
+    name: publica
+    password: "{{ 'mundolibre' | password_hash('sha512') }}"
+    shell: /bin/bash
+    state: present
+
+- name: 4. Registrar usuario en Samba con smbpasswd
+  ansible.builtin.shell: >
+    (echo "mundolibre"; echo "mundolibre") | smbpasswd -s -a publica
+  changed_when: false
+
+- name: 5. Desplegar plantilla de configuracion smb.conf
+  ansible.builtin.template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reiniciar servicios samba
+
+- name: 6. Asegurar que los servicios de Samba estan activos y habilitados
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop:
+    - smb
+    - nmb

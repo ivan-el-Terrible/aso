@@ -1,1 +1,16 @@
-{# Configuración de Samba. configure.yml debe renderizarla con datos de users/directories. #}
+[global]
+   workgroup = WORKGROUP
+   server string = Servidor Samba openSUSE ASO
+   security = user
+   map to guest = Bad User
+   log file = /var/log/samba/%m.log
+   max log size = 50
+
+[archives]
+   comment = my files
+   path = /opt/archives
+   browsable = yes
+   read only = no
+   inherit acls = yes
+   create mask = 0777
+   directory mask = 0777

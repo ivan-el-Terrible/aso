@@ -1,2 +1,8 @@
-# Handlers de Samba.
-# Deben recibir notificaciones desde configure.yml.
+---
+- name: Reiniciar servicios samba
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - smb
+    - nmb
