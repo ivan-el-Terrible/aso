@@ -1,2 +1,5 @@
-# Variables del grupo destinos definido en inventory/hosts.ini.
-# Debe alimentar site.yml y los roles de servicios para cada entorno.
+---
+# Hash SHA-512 de la contraseña solicitada para publica. Evita guardar texto
+# claro en el repositorio; cambia esta credencial antes de usarla fuera del
+# laboratorio y considera cifrar este valor con Ansible Vault.
+accounts_publica_password_hash: '$6$gEtVPWZDnEZYARYz$DU1XxkxisS3kdiKK7O8SYffmOf7GpDIGuWvne3ANUZPZHNs7exxI2X5Zt1qQlkaBg5J54MhmSUqDEVpNsrdIf1'

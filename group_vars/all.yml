@@ -1,4 +1,6 @@
 # Cuentas comunes a todos los destinos.
 accounts_users:
   - name: publica
+    group: publica
     home: /home/publica
+    password_hash: "{{ accounts_publica_password_hash }}"

@@ -1,21 +1,21 @@
 # Ansible para openSUSE Leap 16.0
 
-Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con Ansible. Ya están implementados los roles `preflight`, `packages`, `accounts` y `ftp`; los demás roles siguen como esqueleto.
+Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con Ansible. El despliegue FTP ejecuta `preflight`, `packages`, `accounts`, `ftp`, `firewall` y `verify`; los demás servicios siguen como esqueleto.
 
 ## Estructura
 
 ```text
 .
 ├── ansible.cfg                 # Opciones del controlador Ansible
-├── site.yml                    # Ejecuta preflight, packages, accounts y ftp
-├── requirements.yml            # Colección community.general para Zypper
+├── site.yml                    # Coordina cuenta, FTP, firewall y verificación
+├── requirements.yml            # Colecciones para Zypper y firewalld
 ├── .gitignore                  # Exclusiones de Git que se definirán
 ├── README.md                   # Descripción y mapa del proyecto
 ├── inventory/
 │   └── hosts.ini               # Grupo destinos y dirección del servidor FTP
 ├── group_vars/
 │   ├── all.yml                 # Cuentas comunes a todos los hosts
-│   └── destinos.yml            # Variables del grupo «destinos» del inventario
+│   └── destinos.yml            # Hash de contraseña del grupo «destinos»
 └── roles/
     ├── preflight/              # Validaciones previas
     ├── packages/               # Paquetes centralizados
@@ -30,25 +30,25 @@ Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con A
     └── verify/                 # Verificación de servicios
 ```
 
-`inventory/hosts.ini` define el grupo `destinos` con la dirección del servidor del ejemplo; ajusta la IP si cambió el destino. `site.yml` ejecuta `preflight`, `packages`, `accounts` y `ftp` en ese grupo con privilegios de administrador. `group_vars/all.yml` define las cuentas comunes y `group_vars/destinos.yml` queda disponible para variables específicas del grupo. `requirements.yml` declara `community.general`, necesaria para instalar paquetes con Zypper.
+`inventory/hosts.ini` define el grupo `destinos` con la dirección del servidor del ejemplo; ajusta la IP si cambió el destino. `site.yml` ejecuta `preflight`, `packages`, `accounts`, `ftp`, `firewall` y `verify` en ese orden y con privilegios de administrador. `group_vars/all.yml` define la cuenta `publica`; `group_vars/destinos.yml` proporciona el hash de su contraseña. `requirements.yml` declara `community.general` para Zypper y `ansible.posix` para firewalld.
 
-Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para sus valores predeterminados y `meta/main.yml` para sus metadatos. Los roles de servicios incluyen `handlers/main.yml` para recargas o reinicios. Donde corresponde, `tasks/` separa instalación, configuración, usuarios, directorios, bases de datos, TLS o reglas; `templates/` contiene archivos Jinja2 `.j2`. Solo `preflight`, `packages`, `accounts` y `ftp` tienen tareas funcionales por ahora.
+Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para sus valores predeterminados y `meta/main.yml` para sus metadatos. Los roles de servicios incluyen `handlers/main.yml` para recargas o reinicios. Donde corresponde, `tasks/` separa instalación, configuración, usuarios, directorios, bases de datos, TLS o reglas; `templates/` contiene archivos Jinja2 `.j2`. Los seis roles del despliegue FTP ya tienen tareas funcionales.
 
 ## Roles
 
 | Rol | Responsabilidad prevista | Relación con los demás |
 | --- | --- | --- |
 | `preflight` | Validar openSUSE Leap 16.0 y la disponibilidad de Zypper. La conexión SSH se establece antes de ejecutar sus tareas. | Se ejecuta antes de instalar o configurar FTP. |
-| `packages` | Centralizar las listas y la instalación de paquetes; actualmente instala `vsftpd` y refresca el catálogo de Zypper. | Prepara el paquete requerido por `ftp`. |
-| `accounts` | Crear usuarios locales y sus directorios personales. | Crea `publica` con `/home/publica`; Samba y FTP podrán reutilizar esta cuenta. |
+| `packages` | Centralizar la instalación de `vsftpd`, `firewalld` y `python3-firewall` y refrescar el catálogo de Zypper. | Prepara los paquetes requeridos por `ftp` y `firewall`. |
+| `accounts` | Crear usuarios locales y establecer sus contraseñas mediante hashes. | Crea `publica` con `/home/publica` y configura la contraseña solicitada antes de ejecutar `ftp`. |
 | `apache_php` | Instalar y configurar Apache y PHP mediante sus plantillas. | Proporcionará el entorno web que necesita `phpmyadmin`. |
 | `mariadb` | Configurar el servidor MariaDB, sus usuarios y bases de datos. | Proporcionará la base de datos administrada desde `phpmyadmin`. |
 | `phpmyadmin` | Instalar y configurar la interfaz web de administración de MariaDB. | Dependerá de Apache/PHP y MariaDB. |
 | `samba` | Configurar Samba, sus usuarios, directorios y la plantilla `smb.conf.j2`. | Podrá reutilizar cuentas y rutas de `accounts`. |
-| `ftp` | Instalar la configuración de `vsftpd.conf.j2`, habilitar el servicio y reiniciarlo cuando cambie la configuración. | Usa el paquete de `packages` y permite autenticar usuarios locales; la gestión específica de usuarios y directorios FTP sigue pendiente. |
+| `ftp` | Instalar `vsftpd.conf.j2`, preparar `/home/publica` y `/home/publica/archivos`, y habilitar el servicio. | Verifica la cuenta creada por `accounts` y prepara un directorio escribible por `publica`. |
 | `postgresql` | Configurar PostgreSQL, usuarios, bases de datos y TLS. | Usará los paquetes centralizados; no contempla pgAdmin ni phpPgAdmin. |
-| `firewall` | Definir reglas de acceso para los servicios desplegados. | Deberá reflejar los servicios y puertos que se habiliten en los otros roles. |
-| `verify` | Comprobar el estado y la disponibilidad de los servicios. | Deberá ejecutarse al final, tras la configuración del firewall. |
+| `firewall` | Permitir SSH, `21/TCP` y `30000–30100/TCP` en firewalld. | Aplica reglas permanentes antes de iniciar el servicio y respeta el puerto SSH configurado. |
+| `verify` | Comprobar servicios, escucha IPv4 local y permisos de los directorios FTP. | Se ejecuta al final, tras `firewall`. |
 
 ## Despliegue FTP
 
@@ -56,10 +56,12 @@ Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para 
 2. Instala la colección en el controlador: `ansible-galaxy collection install -r requirements.yml`.
 3. Ejecuta `ansible-playbook site.yml` desde este directorio.
 
-El rol `accounts` crea `publica` y `/home/publica`, pero **no establece una contraseña**. La plantilla de vsftpd permite autenticar usuarios locales mediante PAM; asigna credenciales válidas al usuario que deba entrar por FTP. Los archivos `roles/ftp/tasks/users.yml` y `directories.yml` siguen reservados para una gestión específica de FTP.
+El rol `accounts` crea `publica` y `/home/publica`. Luego establece la contraseña solicitada mediante un hash SHA-512, equivalente al resultado de `passwd publica` y apto para reejecutar el playbook sin interacción. El texto claro no se guarda en el repositorio. El hash está en `group_vars/destinos.yml`; antes de publicar el repositorio o usarlo fuera de un laboratorio, cambia la contraseña y protege el hash con Ansible Vault.
 
-La plantilla fija el rango pasivo TCP `30000–30100`. Deben permitirse también el puerto `21/TCP` y ese rango en el firewall o los controles de red; el rol `firewall` aún no aplica reglas. Las opciones `listen=NO` y `listen_ipv6=YES` proceden de la configuración solicitada; comprueba la conectividad IPv4 del servidor si los clientes usan IPv4. Si existe NAT, configura la dirección pasiva anunciada en la plantilla antes de desplegar.
+La raíz FTP `/home/publica` tendrá propietario `root`, grupo `publica` y modo `0750`. El usuario podrá acceder y leer allí, pero deberá subir archivos dentro de `/home/publica/archivos`, con propietario y grupo `publica` y modo `0750`. En un cliente FTP, el directorio de subida se verá como `/archivos`.
 
-La configuración usa FTP **sin cifrado**: las credenciales y los datos viajan en texto claro. Úsala solo en una red de confianza y configura TLS antes de exponerla a otras redes. `allow_writeable_chroot=YES` permite un directorio personal escribible dentro del entorno restringido y conviene revisar los permisos de las cuentas.
+La plantilla fija el rango pasivo TCP `30000–30100`. `firewall` abre ese rango, `21/TCP` y el puerto SSH en la zona `public`. Antes de ejecutar, confirma que la interfaz del nodo pertenece a esa zona; si no, cambia `ftp_firewall_zone` en `roles/firewall/defaults/main.yml` o sobrescríbela desde `group_vars/destinos.yml`. Las opciones `listen=NO` y `listen_ipv6=YES` proceden de la configuración solicitada. `verify` comprueba que el puerto 21 responde en IPv4 local, pero la conexión y transferencia desde otro equipo deben probarse tras el despliegue. Si existe NAT, configura la dirección pasiva anunciada en la plantilla y el reenvío de puertos.
+
+La configuración usa FTP **sin cifrado**: las credenciales y los datos viajan en texto claro. Úsala solo en una red de confianza y configura TLS antes de exponerla a otras redes. El servicio acepta usuarios locales mediante PAM; `anonymous_enable=NO` desactiva el acceso anónimo.
 
 El orden de los demás roles es el **diseño previsto**; todavía no se ejecutan desde `site.yml`.

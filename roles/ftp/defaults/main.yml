@@ -4,3 +4,6 @@
 # roles/ftp/templates/vsftpd.conf.j2 solicitada para esta etapa.
 ftp_config_path: /etc/vsftpd.conf
 ftp_service_name: vsftpd
+ftp_user: publica
+ftp_home: /home/publica
+ftp_upload_dir: /home/publica/archivos

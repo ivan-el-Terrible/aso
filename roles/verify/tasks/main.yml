@@ -1,2 +1,3 @@
-# Entrada para verificar servicios.
-# Debe ejecutarse al final de site.yml y consumir datos de todos los roles.
+---
+- name: Verificar FTP después de configurar el firewall
+  ansible.builtin.import_tasks: services.yml

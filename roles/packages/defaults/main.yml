@@ -2,3 +2,5 @@
 # Los demás servicios añadirán sus paquetes aquí al implementarse.
 packages_ftp:
   - vsftpd
+  - firewalld
+  - python3-firewall

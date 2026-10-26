@@ -1,3 +1,6 @@
-# Usuarios de FTP: pendiente de implementación.
-# Actualmente vsftpd autentica usuarios locales existentes mediante PAM.
-# El rol accounts crea la cuenta publica sin establecer contraseña.
+---
+# accounts crea publica y establece su contraseña antes de llegar a este rol.
+- name: Comprobar que la cuenta local de FTP exista
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ ftp_user }}"

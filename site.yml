@@ -8,5 +8,7 @@
     - packages
     - accounts
     - ftp
+    - firewall
+    - verify
 
 # Los demás roles del proyecto siguen pendientes de implementación.

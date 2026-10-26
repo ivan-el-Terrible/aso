@@ -1,8 +1,15 @@
 ---
+- name: Comprobar que el usuario FTP exista
+  ansible.builtin.import_tasks: users.yml
+
 - name: Aplicar la configuración de FTP
   ansible.builtin.import_tasks: configure.yml
+
+- name: Preparar directorios y permisos FTP
+  ansible.builtin.import_tasks: directories.yml
 
 - name: Habilitar y arrancar el servicio FTP
   ansible.builtin.import_tasks: install.yml
 
-# users.yml y directories.yml quedan reservados para cuentas y rutas futuras.
+- name: Aplicar reinicio pendiente antes de verificar FTP
+  ansible.builtin.meta: flush_handlers

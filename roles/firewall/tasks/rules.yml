@@ -1,2 +1,13 @@
-# Definición reservada de reglas del firewall.
-# Debe recibir puertos y servicios de group_vars/ y relacionarse con todos los roles de servicio.
+---
+- name: Permitir el puerto SSH y los puertos de FTP en la zona configurada
+  ansible.posix.firewalld:
+    zone: "{{ ftp_firewall_zone }}"
+    port: "{{ item }}"
+    state: enabled
+    permanent: true
+    immediate: true
+    offline: true
+  loop:
+    - "{{ ftp_firewall_ssh_port }}/tcp"
+    - "{{ ftp_firewall_control_port }}/tcp"
+    - "{{ ftp_firewall_passive_ports }}/tcp"
