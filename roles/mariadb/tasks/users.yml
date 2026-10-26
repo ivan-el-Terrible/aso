@@ -1,0 +1,2 @@
+# Usuarios y privilegios de MariaDB.
+# Debe depender de configure.yml y consumir variables de defaults/main.yml o group_vars/.

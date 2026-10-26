@@ -1,0 +1,2 @@
+# Configuración de vsftpd.
+# Debe renderizar templates/vsftpd.conf.j2 y notificar handlers/main.yml.

@@ -1,0 +1,2 @@
+# Configuración de MariaDB.
+# Debe usar templates/my.cnf.j2 y notificar handlers/main.yml.

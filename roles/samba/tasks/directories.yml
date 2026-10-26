@@ -1,0 +1,2 @@
+# Directorios compartidos de Samba.
+# Debe usar rutas de accounts y coordinarse con templates/smb.conf.j2.

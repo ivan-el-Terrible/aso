@@ -1,0 +1,2 @@
+# Handlers de PostgreSQL.
+# Deben recibir notificaciones desde configure.yml y tls.yml.

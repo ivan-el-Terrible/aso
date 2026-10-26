@@ -1,0 +1,2 @@
+# Usuarios y privilegios de PostgreSQL.
+# Debe ejecutarse después de configure.yml y consumir variables del rol o group_vars/.

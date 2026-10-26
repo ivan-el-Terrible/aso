@@ -1,0 +1,2 @@
+# Bases de datos de PostgreSQL.
+# Debe depender del servidor configurado y relacionarse con users.yml.

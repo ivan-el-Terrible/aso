@@ -1,0 +1,2 @@
+# Configuración de PostgreSQL.
+# Debe usar templates/postgresql.conf.j2 y pg_hba.conf.j2, notificando handlers/main.yml.

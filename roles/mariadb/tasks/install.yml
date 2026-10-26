@@ -1,0 +1,2 @@
+# Instalación del servidor MariaDB.
+# Debe consumir packages y defaults/main.yml; configure.yml depende de este paso.

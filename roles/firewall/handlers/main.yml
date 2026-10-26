@@ -1,0 +1,2 @@
+# Handlers del firewall.
+# Deben recibir notificaciones desde rules.yml para recargar reglas.

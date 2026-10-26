@@ -1,0 +1,2 @@
+# Configuración de Samba.
+# Debe renderizar templates/smb.conf.j2 y notificar handlers/main.yml.

@@ -1,0 +1,2 @@
+# Configuración de phpMyAdmin.
+# Debe usar templates/config.inc.php.j2 y relacionarse con apache_php y mariadb.

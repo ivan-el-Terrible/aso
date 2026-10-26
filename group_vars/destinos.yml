@@ -1,0 +1,2 @@
+# Variables del grupo destinos definido en inventory/hosts.ini.
+# Debe alimentar site.yml y los roles de servicios para cada entorno.

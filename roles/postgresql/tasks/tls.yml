@@ -1,0 +1,2 @@
+# TLS de PostgreSQL.
+# Debe preparar certificados y parámetros consumidos por configure.yml; no incluye pgAdmin.

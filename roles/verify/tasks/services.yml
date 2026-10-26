@@ -1,0 +1,2 @@
+# Comprobaciones reservadas de servicios.
+# Debe validar resultados de Apache, bases de datos, Samba, FTP y firewall sin cambiar el sistema.
