@@ -1,8 +1,21 @@
 ---
+- name: Registrar la clave SSH verificada de los destinos en el controlador
+  hosts: destinos
+  connection: local
+  become: false
+  gather_facts: false
+  tags: ssh_host_key
+  tasks:
+    - name: Comprobar y registrar la clave SSH del destino
+      ansible.builtin.import_role:
+        name: preflight
+        tasks_from: ssh_host_key
+
 - name: Configurar cuentas y FTP en openSUSE Leap 16.0
   hosts: destinos
   become: true
   gather_facts: true
+  tags: deploy
   roles:
     - preflight
     - packages
