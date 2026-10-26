@@ -1,5 +1,12 @@
-- name: Configurar cuentas y directorios en los destinos
+---
+- name: Configurar cuentas y FTP en openSUSE Leap 16.0
   hosts: destinos
   become: true
+  gather_facts: true
   roles:
+    - preflight
+    - packages
     - accounts
+    - ftp
+
+# Los demás roles del proyecto siguen pendientes de implementación.

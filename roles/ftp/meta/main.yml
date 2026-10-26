@@ -1,2 +1,2 @@
-# Metadatos de ftp.
-# Deben documentar dependencias con packages y accounts.
+# Metadatos de ftp: pendiente de implementación.
+# site.yml ejecuta packages y accounts antes de ftp.

@@ -1,2 +1,4 @@
-# Listas predeterminadas de paquetes.
-# Deben ser consumidas por tasks/main.yml y reutilizadas por los roles de servicios.
+---
+# Los demás servicios añadirán sus paquetes aquí al implementarse.
+packages_ftp:
+  - vsftpd

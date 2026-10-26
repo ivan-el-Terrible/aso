@@ -1,2 +1,3 @@
-# Usuarios de FTP.
-# Debe consumir cuentas de accounts y parámetros de group_vars/.
+# Usuarios de FTP: pendiente de implementación.
+# Actualmente vsftpd autentica usuarios locales existentes mediante PAM.
+# El rol accounts crea la cuenta publica sin establecer contraseña.
