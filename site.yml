@@ -1,3 +1,5 @@
-# Playbook principal.
-# Debe consumir inventory/hosts.ini y group_vars/ para coordinar los 11 roles.
-# Pendiente: incluir roles por etapas; este archivo no ejecuta nada todavía.
+- name: Configurar cuentas y directorios en los destinos
+  hosts: destinos
+  become: true
+  roles:
+    - accounts

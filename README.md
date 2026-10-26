@@ -1,6 +1,6 @@
 # Ansible para openSUSE Leap 16.0
 
-Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con Ansible. Actualmente contiene **solo el esqueleto**: los playbooks, roles, variables y plantillas tienen comentarios descriptivos, pero todavía no definen tareas ejecutables ni servicios configurados.
+Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con Ansible. El rol `accounts` ya crea cuentas locales; los demás roles siguen como esqueleto.
 
 ## Estructura
 
@@ -12,9 +12,9 @@ Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con A
 ├── .gitignore                  # Exclusiones de Git que se definirán
 ├── README.md                   # Descripción y mapa del proyecto
 ├── inventory/
-│   └── hosts.ini               # Inventario operativo; aún sin hosts reales
+│   └── hosts.ini               # Grupo destinos; aún sin hosts reales
 ├── group_vars/
-│   ├── all.yml                 # Variables comunes a todos los hosts
+│   ├── all.yml                 # Cuentas comunes a todos los hosts
 │   └── destinos.yml            # Variables del futuro grupo «destinos» del inventario
 └── roles/
     ├── preflight/              # Validaciones previas
@@ -30,9 +30,9 @@ Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con A
     └── verify/                 # Verificación de servicios
 ```
 
-`inventory/hosts.ini` será la fuente de hosts y grupos para `site.yml`. Las variables de `group_vars/all.yml` aplicarán a todos los hosts; `group_vars/destinos.yml` corresponderá al grupo `destinos` cuando se defina en el inventario. `site.yml` deberá seleccionar los hosts y coordinar los roles. `requirements.yml` reservará las colecciones o roles externos que hagan falta durante la implementación.
+`inventory/hosts.ini` define el grupo `destinos`; añade allí los hosts antes de ejecutar el playbook. `site.yml` ejecuta el rol `accounts` en ese grupo con privilegios de administrador. `group_vars/all.yml` define las cuentas comunes, y `group_vars/destinos.yml` queda disponible para variables específicas del grupo. `requirements.yml` reservará las colecciones o roles externos que hagan falta durante la implementación.
 
-Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para sus valores predeterminados y `meta/main.yml` para sus metadatos. Los roles que configurarán servicios incluyen `handlers/main.yml` para futuras recargas o reinicios. Donde corresponde, `tasks/` contiene archivos separados para instalación, configuración, usuarios, directorios, bases de datos, TLS o reglas; `templates/` contiene archivos Jinja2 `.j2` destinados a generar configuraciones. Por ahora, todos estos archivos son marcadores con comentarios.
+Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para sus valores predeterminados y `meta/main.yml` para sus metadatos. Los roles que configurarán servicios incluyen `handlers/main.yml` para futuras recargas o reinicios. Donde corresponde, `tasks/` contiene archivos separados para instalación, configuración, usuarios, directorios, bases de datos, TLS o reglas; `templates/` contiene archivos Jinja2 `.j2` destinados a generar configuraciones. Salvo `accounts`, estos archivos siguen como marcadores con comentarios.
 
 ## Roles
 
@@ -40,7 +40,7 @@ Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para 
 | --- | --- | --- |
 | `preflight` | Validar la versión del sistema operativo, la conectividad SSH y la disponibilidad de Zypper. | Debe ejecutarse antes de instalar o configurar servicios. |
 | `packages` | Centralizar las listas y la instalación de paquetes. | Proveerá los paquetes requeridos por los roles de servicios. |
-| `accounts` | Gestionar usuarios, grupos y directorios comunes. | Preparará recursos que podrán utilizar Samba y FTP. |
+| `accounts` | Crear usuarios locales y sus directorios personales. | Crea `publica` con `/home/publica`; Samba y FTP podrán reutilizar esta cuenta. |
 | `apache_php` | Instalar y configurar Apache y PHP mediante sus plantillas. | Proporcionará el entorno web que necesita `phpmyadmin`. |
 | `mariadb` | Configurar el servidor MariaDB, sus usuarios y bases de datos. | Proporcionará la base de datos administrada desde `phpmyadmin`. |
 | `phpmyadmin` | Instalar y configurar la interfaz web de administración de MariaDB. | Dependerá de Apache/PHP y MariaDB. |
@@ -50,4 +50,4 @@ Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para 
 | `firewall` | Definir reglas de acceso para los servicios desplegados. | Deberá reflejar los servicios y puertos que se habiliten en los otros roles. |
 | `verify` | Comprobar el estado y la disponibilidad de los servicios. | Deberá ejecutarse al final, tras la configuración del firewall. |
 
-El orden descrito es el **diseño previsto**, aún no está implementado en `site.yml`. Antes de ejecutar Ansible será necesario definir los hosts, las variables y las tareas de cada etapa.
+El orden de los demás roles es el **diseño previsto**. `site.yml` ejecuta solo `accounts` por ahora. Para crear la cuenta, añade tus hosts al grupo `destinos` en `inventory/hosts.ini` y ejecuta `ansible-playbook -i inventory/hosts.ini site.yml`.
