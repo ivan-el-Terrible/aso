@@ -1,2 +1,1 @@
-# Valores predeterminados de cuentas y directorios.
-# Deben alimentar tasks/main.yml y relacionarse con group_vars/destinos.yml.
+accounts_users: []

@@ -1,2 +1,12 @@
-# Entrada del rol preflight.
-# Debe validar SO, SSH y Zypper antes de packages y de los roles de servicios.
+---
+# La conexión SSH ya debe funcionar para que Ansible llegue a esta tarea.
+- name: Comprobar que el destino sea openSUSE Leap 16.0
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['distribution'] is match('^openSUSE')
+      - ansible_facts['distribution_version'] == '16.0'
+    fail_msg: Este despliegue FTP requiere openSUSE Leap 16.0.
+
+- name: Comprobar que Zypper esté disponible
+  ansible.builtin.command: zypper --version
+  changed_when: false

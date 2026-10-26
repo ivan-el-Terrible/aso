@@ -1,2 +1,3 @@
-# Dependencias de colecciones o roles externos.
-# Debe ser consumido por el controlador antes de site.yml si se requieren dependencias.
+# community.general aporta el módulo zypper usado por roles/packages.
+collections:
+  - name: community.general

@@ -1,2 +1,4 @@
-# Variables comunes a todos los destinos.
-# Debe ser consumido por site.yml y por roles como preflight, packages y firewall.
+# Cuentas comunes a todos los destinos.
+accounts_users:
+  - name: publica
+    home: /home/publica

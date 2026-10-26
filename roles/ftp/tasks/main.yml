@@ -1,2 +1,8 @@
-# Entrada para vsftpd.
-# Debe coordinar instalación, configuración, usuarios y directorios tras accounts.
+---
+- name: Aplicar la configuración de FTP
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Habilitar y arrancar el servicio FTP
+  ansible.builtin.import_tasks: install.yml
+
+# users.yml y directories.yml quedan reservados para cuentas y rutas futuras.

@@ -1,3 +1,12 @@
-# Playbook principal.
-# Debe consumir inventory/hosts.ini y group_vars/ para coordinar los 11 roles.
-# Pendiente: incluir roles por etapas; este archivo no ejecuta nada todavía.
+---
+- name: Configurar cuentas y FTP en openSUSE Leap 16.0
+  hosts: destinos
+  become: true
+  gather_facts: true
+  roles:
+    - preflight
+    - packages
+    - accounts
+    - ftp
+
+# Los demás roles del proyecto siguen pendientes de implementación.

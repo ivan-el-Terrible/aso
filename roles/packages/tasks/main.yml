@@ -1,2 +1,12 @@
-# Entrada de instalación centralizada de paquetes.
-# Debe ejecutarse después de preflight y proveer paquetes a los demás roles.
+---
+- name: Instalar los paquetes de FTP con Zypper
+  community.general.zypper:
+    name: "{{ packages_ftp }}"
+    state: present
+    update_cache: true
+  register: packages_ftp_install
+  until: packages_ftp_install is succeeded
+  retries: 5
+  delay: 4
+
+# La actualización general del sistema se gestiona por separado.
