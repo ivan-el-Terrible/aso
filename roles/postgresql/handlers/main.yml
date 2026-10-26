@@ -1,2 +1,7 @@
 # Handlers de PostgreSQL.
 # Deben recibir notificaciones desde configure.yml y tls.yml.
+---
+- name: Restart PostgreSQL
+  service:
+    name: postgresql
+    state: restarted

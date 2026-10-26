@@ -1,2 +1,17 @@
 # Instalación del servidor PostgreSQL.
 # Debe consumir packages y defaults/main.yml.
+---
+- name: Instalar servidor PostgreSQL y biblioteca PHP (php8-pgsql)
+  zypper:
+    name:
+      - postgresql-server
+      - postgresql
+      - php8-pgsql
+      - python313-psycopg2
+    state: present
+
+- name: Asegurar que el servicio PostgreSQL esté activo y habilitado
+  service:
+    name: postgresql
+    state: started
+    enabled: yes

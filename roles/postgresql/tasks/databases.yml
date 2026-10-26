@@ -1,2 +1,4 @@
-# Bases de datos de PostgreSQL.
-# Debe depender del servidor configurado y relacionarse con users.yml.
+- name: Crear base de datos asignada al usuario
+  shell: |
+    sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname = 'mibase'" | grep -q 1 || sudo -u postgres createdb -O alejandro mibase
+  changed_when: false

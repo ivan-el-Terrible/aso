@@ -1,3 +1,6 @@
-# Playbook principal.
-# Debe consumir inventory/hosts.ini y group_vars/ para coordinar los 11 roles.
-# Pendiente: incluir roles por etapas; este archivo no ejecuta nada todavía.
+---
+- name: Despliegue de PostgreSQL - Tarea 5
+  hosts: destinos
+  become: yes
+  roles:
+    - postgresql

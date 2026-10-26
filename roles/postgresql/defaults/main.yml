@@ -1,2 +1,7 @@
 # Valores predeterminados de PostgreSQL.
 # Deben alimentar instalación, usuarios, bases de datos y TLS.
+---
+pg_postgres_password: "12345"
+pg_db_name: "mibase"
+pg_user_name: "alejandro"
+pg_user_password: "12345"
