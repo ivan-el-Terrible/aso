@@ -1,4 +1,28 @@
 ---
+- name: Consultar los servicios antes de usar Zypper
+  ansible.builtin.service_facts:
+
+- name: Detener procesos de PackageKit que puedan bloquear Zypper
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: stopped
+  loop:
+    - packagekit-background.service
+    - packagekit.service
+  when:
+    - item in ansible_facts.services
+    - ansible_facts.services[item].state == 'running'
+
+- name: Comprobar que PackageKit no siga activo
+  ansible.builtin.service_facts:
+
+- name: Exigir que PackageKit esté detenido antes de instalar paquetes
+  ansible.builtin.assert:
+    that:
+      - "'packagekit-background.service' not in ansible_facts.services or ansible_facts.services['packagekit-background.service'].state != 'running'"
+      - "'packagekit.service' not in ansible_facts.services or ansible_facts.services['packagekit.service'].state != 'running'"
+    fail_msg: PackageKit sigue activo y puede bloquear Zypper.
+
 - name: Instalar los paquetes de FTP con Zypper
   community.general.zypper:
     name: "{{ packages_ftp }}"

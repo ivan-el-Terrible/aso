@@ -39,7 +39,7 @@ Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para 
 | Rol | Responsabilidad prevista | Relación con los demás |
 | --- | --- | --- |
 | `preflight` | Registrar en el controlador una clave SSH cuya huella coincida con el inventario; después validar openSUSE Leap 16.0 y Zypper en el nodo. | La tarea local se ejecuta antes de la primera conexión SSH; las validaciones remotas preceden a FTP. |
-| `packages` | Centralizar la instalación de `vsftpd`, `firewalld` y `python3-firewall` y refrescar el catálogo de Zypper. | Prepara los paquetes requeridos por `ftp` y `firewall`. |
+| `packages` | Detener PackageKit si está activo y centralizar la instalación de `vsftpd`, `firewalld` y `python3-firewall` con Zypper. | Evita que PackageKit bloquee Zypper y prepara los paquetes requeridos por `ftp` y `firewall`. |
 | `accounts` | Crear usuarios locales y establecer sus contraseñas mediante hashes. | Crea `publica` con `/home/publica` y configura la contraseña solicitada antes de ejecutar `ftp`. |
 | `apache_php` | Instalar y configurar Apache y PHP mediante sus plantillas. | Proporcionará el entorno web que necesita `phpmyadmin`. |
 | `mariadb` | Configurar el servidor MariaDB, sus usuarios y bases de datos. | Proporcionará la base de datos administrada desde `phpmyadmin`. |
@@ -115,6 +115,8 @@ cmp /tmp/prueba-ftp.txt /tmp/prueba-ftp-descargada.txt && echo 'Subida y descarg
 La raíz FTP no permite subir archivos: haz `cd archivos` antes de `put` o `mput`. Un `553 Could not create file` en la raíz es el comportamiento esperado. `mget` descarga archivos; `whoami` y `users` son comandos de la terminal, no del cliente FTP.
 
 Si falla la prueba, distingue el punto de fallo: un tiempo de espera en SSH indica un problema de red o del puerto 22; un error de clave SSH exige revisar la huella; `Permission denied` después de conectar por SSH apunta a la autenticación; `530` en FTP apunta al usuario o contraseña; `553` dentro de `archivos` exige revisar los permisos del nodo; y si el inicio de sesión funciona pero `ls` o una transferencia se detienen, revisa los puertos pasivos `30000–30100/TCP` y la zona del firewall. Si el nodo cambió legítimamente su clave SSH, verifica la nueva huella antes de actualizar el inventario y la entrada anterior de `known_hosts`.
+
+Si Zypper reintenta la instalación, el rol `packages` detiene previamente `packagekit.service` y `packagekit-background.service` cuando están activos. Si agota los reintentos, consulta el mensaje final de Zypper: otra operación de paquetes, un repositorio inaccesible o un error de descarga también pueden causar el fallo.
 
 El rol `accounts` crea `publica` y `/home/publica`. Luego establece la contraseña solicitada mediante un hash SHA-512, equivalente al resultado de `passwd publica` y apto para reejecutar el playbook sin interacción. El texto claro no se guarda en el repositorio. El hash está en `group_vars/destinos.yml`; antes de publicar el repositorio o usarlo fuera de un laboratorio, cambia la contraseña y protege el hash con Ansible Vault.
 
