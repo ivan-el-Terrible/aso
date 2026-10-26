@@ -1,0 +1,2 @@
+# Entrada de instalación centralizada de paquetes.
+# Debe ejecutarse después de preflight y proveer paquetes a los demás roles.

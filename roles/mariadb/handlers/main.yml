@@ -1,0 +1,2 @@
+# Handlers de MariaDB.
+# Deben recibir notificaciones desde configure.yml y servir a phpmyadmin.

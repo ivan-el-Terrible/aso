@@ -1,0 +1,2 @@
+# Valores predeterminados del firewall.
+# Deben definir zonas, servicios y puertos consumidos por rules.yml.

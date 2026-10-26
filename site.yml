@@ -1,0 +1,6 @@
+---
+- name: Despliegue de PostgreSQL - Tarea 5
+  hosts: destinos
+  become: yes
+  roles:
+    - postgresql

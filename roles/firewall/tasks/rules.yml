@@ -1,0 +1,2 @@
+# Definición reservada de reglas del firewall.
+# Debe recibir puertos y servicios de group_vars/ y relacionarse con todos los roles de servicio.

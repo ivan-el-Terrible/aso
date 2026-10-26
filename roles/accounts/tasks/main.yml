@@ -1,0 +1,2 @@
+# Entrada para usuarios, grupos y directorios.
+# Debe ejecutarse antes de samba y ftp, y exponer recursos reutilizables por esos roles.

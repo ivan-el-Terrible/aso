@@ -1,0 +1,2 @@
+# Instalación de Apache y PHP.
+# Debe consumir packages y defaults/main.yml; configure.yml depende de su resultado.

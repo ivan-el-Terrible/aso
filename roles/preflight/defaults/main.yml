@@ -1,0 +1,2 @@
+# Valores predeterminados de las validaciones de preflight.
+# Deben ser consumidos por tasks/main.yml y poder ajustarse desde group_vars/.

@@ -1,0 +1,2 @@
+# Configuración de Apache y PHP.
+# Debe usar templates/apache.conf.j2 y php.ini.j2, notificando handlers/main.yml.

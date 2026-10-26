@@ -1,0 +1,2 @@
+# Handlers de phpMyAdmin.
+# Deben coordinar acciones sobre Apache/PHP cuando configure.yml lo requiera.

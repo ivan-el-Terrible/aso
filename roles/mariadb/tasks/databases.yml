@@ -1,0 +1,2 @@
+# Bases de datos de MariaDB.
+# Debe ejecutarse después de users.yml y relacionarse con phpmyadmin.

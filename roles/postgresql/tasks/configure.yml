@@ -1,0 +1,20 @@
+# Configuración de PostgreSQL.
+# Debe usar templates/postgresql.conf.j2 y pg_hba.conf.j2, notificando handlers/main.yml.
+---
+- name: Configurar postgresql.conf (listen_addresses, SSL, encriptación)
+  template:
+    src: postgresql.conf.j2
+    dest: /var/lib/pgsql/data/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  notify: Restart PostgreSQL
+
+- name: Configurar reglas de acceso remoto en pg_hba.conf
+  template:
+    src: pg_hba.conf.j2
+    dest: /var/lib/pgsql/data/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  notify: Restart PostgreSQL

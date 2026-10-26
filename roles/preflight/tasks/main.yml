@@ -1,0 +1,2 @@
+# Entrada del rol preflight.
+# Debe validar SO, SSH y Zypper antes de packages y de los roles de servicios.

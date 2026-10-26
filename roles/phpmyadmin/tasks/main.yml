@@ -1,0 +1,2 @@
+# Entrada para phpMyAdmin.
+# Debe coordinar install.yml y configure.yml después de apache_php y mariadb.
