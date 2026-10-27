@@ -1,0 +1,11 @@
+---
+- name: Administrar usuarios del laboratorio
+  hosts: servidores
+  gather_facts: false
+
+  pre_tasks:
+    - name: Comprobar la conexion con Ansible
+      ansible.builtin.ping:
+
+  roles:
+    - usuarios

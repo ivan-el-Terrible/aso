@@ -1,0 +1,14 @@
+---
+- name: Crear el grupo de laboratorio
+  ansible.builtin.group:
+    name: "{{ grupo_laboratorio }}"
+    state: present
+
+- name: Crear las cuentas de laboratorio
+  ansible.builtin.user:
+    name: "{{ item }}"
+    group: "{{ grupo_laboratorio }}"
+    shell: /bin/bash
+    create_home: true
+    state: present
+  loop: "{{ usuarios_laboratorio }}"

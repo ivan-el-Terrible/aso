@@ -1,0 +1,6 @@
+---
+grupo_laboratorio: aso_laboratorio
+
+usuarios_laboratorio:
+  - aso_alumno1
+  - aso_alumno2
