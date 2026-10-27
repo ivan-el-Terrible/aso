@@ -1,16 +1,30 @@
-# Entrada para PostgreSQL.
 ---
-- name: Incluir tareas de instalacion
-  include_tasks: install.yml
+- name: Validar los parámetros de PostgreSQL
+  ansible.builtin.assert:
+    that:
+      - postgresql_app_password is defined
+      - postgresql_app_password | length > 0
+      - postgresql_db_name is match('^[A-Za-z][A-Za-z0-9_]*$')
+      - postgresql_app_user is match('^[A-Za-z][A-Za-z0-9_]*$')
+      - postgresql_port | int >= 1
+      - postgresql_port | int <= 65535
+    fail_msg: Define nombres SQL válidos, puerto TCP y contraseña Vault para PostgreSQL.
+  no_log: true
 
-- name: Incluir tareas de certificados TLS
-  include_tasks: tls.yml
+- name: Iniciar PostgreSQL después de instalar los paquetes
+  ansible.builtin.import_tasks: install.yml
 
-- name: Incluir tareas de configuracion y cifrado
-  include_tasks: configure.yml
+- name: Preparar el certificado TLS del servidor
+  ansible.builtin.import_tasks: tls.yml
 
-- name: Incluir tareas de usuarios
-  include_tasks: users.yml
+- name: Configurar PostgreSQL y sus reglas de acceso
+  ansible.builtin.import_tasks: configure.yml
 
-- name: Incluir tareas de bases de datos
-  include_tasks: databases.yml
+- name: Aplicar los cambios de PostgreSQL antes de crear la base
+  ansible.builtin.meta: flush_handlers
+
+- name: Crear la cuenta de aplicación PostgreSQL
+  ansible.builtin.import_tasks: users.yml
+
+- name: Crear la base de datos PostgreSQL
+  ansible.builtin.import_tasks: databases.yml

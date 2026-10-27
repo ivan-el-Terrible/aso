@@ -1,6 +1,8 @@
-{# Configuración principal de PostgreSQL. configure.yml debe renderizarla. #}
-listen_addresses = '*'
-port = 5432
-max_connections = 100
+# Fragmento administrado por Ansible, incluido desde postgresql.conf.
+listen_addresses = '{{ postgresql_listen_addresses }}'
+port = {{ postgresql_port }}
+max_connections = {{ postgresql_max_connections }}
 ssl = on
+ssl_cert_file = 'server.crt'
+ssl_key_file = 'server.key'
 password_encryption = scram-sha-256

@@ -1,2 +1,9 @@
-# Valores predeterminados de vsftpd.
-# Deben alimentar usuarios, directorios y opciones de acceso.
+---
+# Rutas y nombre de servicio consumidos por tasks/configure.yml y tasks/install.yml.
+# Los puertos pasivos y las opciones de escucha están fijados en la plantilla
+# roles/ftp/templates/vsftpd.conf.j2 solicitada para esta etapa.
+ftp_config_path: /etc/vsftpd.conf
+ftp_service_name: vsftpd
+ftp_user: publica
+ftp_home: /home/publica
+ftp_upload_dir: /home/publica/archivos

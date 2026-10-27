@@ -1,2 +1,11 @@
-# Entrada para reglas de acceso.
-# Debe ejecutarse después de conocer los servicios y antes de verify.
+---
+- name: Preparar reglas de acceso para SSH, FTP, Samba, HTTP y PostgreSQL
+  ansible.builtin.import_tasks: rules.yml
+
+# Las reglas permanentes se aplican antes de iniciar firewalld; si ya estaba
+# activo, immediate=true también las aplica al estado actual.
+- name: Habilitar e iniciar firewalld
+  ansible.builtin.systemd_service:
+    name: firewalld
+    enabled: true
+    state: started

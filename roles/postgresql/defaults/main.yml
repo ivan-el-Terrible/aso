@@ -1,7 +1,16 @@
-# Valores predeterminados de PostgreSQL.
-# Deben alimentar instalación, usuarios, bases de datos y TLS.
 ---
-pg_postgres_password: "12345"
-pg_db_name: "mibase"
-pg_user_name: "alejandro"
-pg_user_password: "12345"
+# Credencial Vault compartida con la cuenta de aplicación MariaDB.
+# Cambia esta variable si cada motor debe usar una clave distinta.
+postgresql_app_password: "{{ mariadb_app_password }}"
+postgresql_db_name: mibase
+postgresql_app_user: alejandro
+postgresql_data_dir: /var/lib/pgsql/data
+postgresql_port: 5432
+postgresql_listen_addresses: '*'
+postgresql_max_connections: 100
+# La configuración aportada en tarea5-postgresql acepta cualquier origen IPv4.
+postgresql_allowed_cidrs:
+  - 0.0.0.0/0
+# Configura el nombre y SAN de un certificado propio si se requiere confianza pública.
+postgresql_tls_common_name: "{{ ansible_facts.fqdn | default(inventory_hostname) }}"
+postgresql_tls_san: "IP:{{ ansible_host | default(inventory_hostname) }}"

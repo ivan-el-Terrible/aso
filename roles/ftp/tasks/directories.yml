@@ -1,2 +1,17 @@
-# Directorios de FTP.
-# Debe usar rutas de accounts y coordinarse con la configuración de vsftpd.
+---
+# La raíz del chroot permite entrar y leer, pero no escribir directamente.
+- name: Asegurar permisos del directorio personal FTP
+  ansible.builtin.file:
+    path: "{{ ftp_home }}"
+    state: directory
+    owner: root
+    group: "{{ ftp_user }}"
+    mode: '0750'
+
+- name: Crear directorio de subida para el usuario FTP
+  ansible.builtin.file:
+    path: "{{ ftp_upload_dir }}"
+    state: directory
+    owner: "{{ ftp_user }}"
+    group: "{{ ftp_user }}"
+    mode: '0750'

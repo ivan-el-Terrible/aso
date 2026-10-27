@@ -1,2 +1,13 @@
-# Entrada para Samba.
-# Debe coordinar instalación, configuración, usuarios y directorios tras accounts.
+---
+# packages y accounts ya prepararon Samba y la cuenta Linux publica.
+- name: Preparar el directorio compartido
+  ansible.builtin.import_tasks: directories.yml
+
+- name: Configurar el recurso Samba
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Registrar la cuenta en la base de Samba
+  ansible.builtin.import_tasks: users.yml
+
+- name: Iniciar los servicios Samba
+  ansible.builtin.import_tasks: install.yml

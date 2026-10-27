@@ -1,2 +1,15 @@
-# Configuración de phpMyAdmin.
-# Debe usar templates/config.inc.php.j2 y relacionarse con apache_php y mariadb.
+---
+- name: Leer las banderas actuales de Apache
+  ansible.builtin.slurp:
+    src: /etc/sysconfig/apache2
+  register: phpmyadmin_apache_sysconfig
+
+- name: Activar el alias phpMyAdmin sin alterar otras banderas
+  ansible.builtin.command:
+    argv:
+      - /usr/sbin/a2enflag
+      - phpMyAdmin
+  when: "'phpMyAdmin' not in (phpmyadmin_apache_sysconfig.content | b64decode | regex_findall('(?m)^APACHE_SERVER_FLAGS=.*$') | join(' '))"
+  notify: Reiniciar Apache
+
+# config.inc.php del paquete usa autenticación interactiva; no se copian claves SQL.

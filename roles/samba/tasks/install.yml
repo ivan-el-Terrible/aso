@@ -1,2 +1,10 @@
-# Instalación de Samba.
-# Debe consumir packages y defaults/main.yml.
+---
+# packages instala Samba; este archivo gestiona únicamente sus servicios.
+- name: Habilitar e iniciar smb y nmb
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - smb
+    - nmb

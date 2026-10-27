@@ -1,2 +1,6 @@
-# Usuarios de FTP.
-# Debe consumir cuentas de accounts y parámetros de group_vars/.
+---
+# accounts crea publica y establece su contraseña antes de llegar a este rol.
+- name: Comprobar que la cuenta local de FTP exista
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ ftp_user }}"

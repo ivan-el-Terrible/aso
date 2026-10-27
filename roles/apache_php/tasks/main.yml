@@ -1,2 +1,6 @@
-# Entrada para Apache y PHP.
-# Debe coordinar install.yml y configure.yml después de packages y accounts.
+---
+- name: Preparar Apache y PHP después de packages
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Iniciar Apache con la configuración preparada
+  ansible.builtin.import_tasks: install.yml

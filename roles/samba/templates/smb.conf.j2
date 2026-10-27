@@ -1,1 +1,21 @@
-{# Configuración de Samba. configure.yml debe renderizarla con datos de users/directories. #}
+# Configuración de Samba para el recurso archives. La cuenta la administra
+# roles/accounts y la contraseña SMB se registra en roles/samba/tasks/users.yml.
+[global]
+   workgroup = {{ samba_workgroup }}
+   security = user
+   passdb backend = tdbsam
+   map to guest = Never
+   usershare allow guests = No
+   smb3 unix extensions = Yes
+
+[archives]
+   comment = My files
+   path = {{ samba_archives_path }}
+   browseable = Yes
+   read only = No
+   valid users = {{ samba_user }}
+   guest ok = No
+   force group = {{ samba_group }}
+   inherit acls = Yes
+   create mask = 0660
+   directory mask = 0770

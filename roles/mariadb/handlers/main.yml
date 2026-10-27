@@ -1,2 +1,5 @@
-# Handlers de MariaDB.
-# Deben recibir notificaciones desde configure.yml y servir a phpmyadmin.
+---
+- name: Reiniciar MariaDB
+  ansible.builtin.systemd_service:
+    name: mariadb
+    state: restarted

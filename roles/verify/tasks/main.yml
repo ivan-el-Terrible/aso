@@ -1,2 +1,15 @@
-# Entrada para verificar servicios.
-# Debe ejecutarse al final de site.yml y consumir datos de todos los roles.
+---
+- name: Aplicar reinicios pendientes antes de comprobar los servicios
+  ansible.builtin.meta: flush_handlers
+
+- name: Verificar FTP después de configurar el firewall
+  ansible.builtin.import_tasks: services.yml
+
+- name: Verificar Samba después de configurar el firewall
+  ansible.builtin.import_tasks: samba.yml
+
+- name: Verificar LAMP después de configurar el firewall
+  ansible.builtin.import_tasks: lamp.yml
+
+- name: Verificar PostgreSQL y su conexión TLS
+  ansible.builtin.import_tasks: postgresql.yml

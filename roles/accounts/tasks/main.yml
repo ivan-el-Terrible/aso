@@ -1,2 +1,25 @@
-# Entrada para usuarios, grupos y directorios.
-# Debe ejecutarse antes de samba y ftp, y exponer recursos reutilizables por esos roles.
+- name: Crear grupos principales de las cuentas administradas
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ accounts_users | selectattr('group', 'defined') | map(attribute='group') | list }}"
+
+- name: Crear cuentas con directorio personal
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    group: "{{ item.group | default(omit) }}"
+    home: "{{ item.home }}"
+    create_home: true
+    state: present
+  loop: "{{ accounts_users }}"
+  no_log: true
+
+# Equivale a ejecutar passwd para cada cuenta que tenga password_hash.
+# Ansible recibe el hash, no la contraseña en texto claro.
+- name: Configurar contraseña de las cuentas administradas
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    password: "{{ item.password_hash }}"
+    update_password: always
+  loop: "{{ accounts_users | selectattr('password_hash', 'defined') | list }}"
+  no_log: true

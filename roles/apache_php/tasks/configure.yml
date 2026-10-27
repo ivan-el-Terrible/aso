@@ -1,2 +1,18 @@
-# Configuración de Apache y PHP.
-# Debe usar templates/apache.conf.j2 y php.ini.j2, notificando handlers/main.yml.
+---
+- name: Asegurar el DocumentRoot de Apache
+  ansible.builtin.file:
+    path: "{{ apache_php_document_root }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Publicar una página mínima para verificar PHP
+  ansible.builtin.copy:
+    dest: "{{ apache_php_document_root }}/aso-health.php"
+    content: "<?php echo extension_loaded('mysqli') ? 'PHP y MySQL activos' : 'Falta mysqli'; ?>\n"
+    owner: root
+    group: root
+    mode: '0644'
+
+# mod_php8 y el DocumentRoot se integran mediante los archivos del paquete.

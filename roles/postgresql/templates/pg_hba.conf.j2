@@ -1,4 +1,7 @@
-# TYPE  DATABASE        USER            ADDRESS                 METHOD
+# Reglas de tarea5-postgresql, administradas por Ansible.
+# Las conexiones por socket local no piden contraseña.
 local   all             all                                     trust
-hostssl all             all             0.0.0.0/0               scram-sha-256
-host    all             all             0.0.0.0/0               scram-sha-256
+{% for cidr in postgresql_allowed_cidrs %}
+hostssl all             all             {{ cidr }}               scram-sha-256
+host    all             all             {{ cidr }}               scram-sha-256
+{% endfor %}

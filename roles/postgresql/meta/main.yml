@@ -1,2 +1,2 @@
-# Metadatos de postgresql.
-# Deben documentar dependencias con packages y accounts; no contempla pgAdmin ni phpPgAdmin.
+# El rol depende de packages para el servidor, psycopg2 y OpenSSL.
+# Administra una cuenta SQL y su base, sin pgAdmin ni phpPgAdmin.

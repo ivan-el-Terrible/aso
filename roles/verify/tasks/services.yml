@@ -1,2 +1,39 @@
-# Comprobaciones reservadas de servicios.
-# Debe validar resultados de Apache, bases de datos, Samba, FTP y firewall sin cambiar el sistema.
+---
+- name: Consultar el estado de los servicios
+  ansible.builtin.service_facts:
+
+- name: Confirmar que vsftpd y firewalld estén activos
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.services['vsftpd.service'].state == 'running'
+      - ansible_facts.services['firewalld.service'].state == 'running'
+    fail_msg: vsftpd o firewalld no están activos.
+
+- name: Comprobar que FTP acepta conexiones IPv4 locales
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ ftp_firewall_control_port }}"
+    timeout: 10
+
+- name: Consultar permisos de la raíz FTP
+  ansible.builtin.stat:
+    path: "{{ ftp_home }}"
+  register: ftp_home_stat
+
+- name: Consultar permisos del directorio de subidas
+  ansible.builtin.stat:
+    path: "{{ ftp_upload_dir }}"
+  register: ftp_upload_stat
+
+- name: Confirmar propietario y permisos de los directorios FTP
+  ansible.builtin.assert:
+    that:
+      - ftp_home_stat.stat.isdir
+      - ftp_home_stat.stat.pw_name == 'root'
+      - ftp_home_stat.stat.gr_name == ftp_user
+      - ftp_home_stat.stat.mode == '0750'
+      - ftp_upload_stat.stat.isdir
+      - ftp_upload_stat.stat.pw_name == ftp_user
+      - ftp_upload_stat.stat.gr_name == ftp_user
+      - ftp_upload_stat.stat.mode == '0750'
+    fail_msg: Los permisos de los directorios FTP no coinciden con lo esperado.

@@ -1,2 +1,6 @@
-# Valores predeterminados de MariaDB.
-# Deben alimentar instalación, configuración, usuarios y bases de datos.
+---
+# La cuenta de la aplicación se usa también para comprobar MariaDB desde verify.
+mariadb_database: appdb
+mariadb_app_user: appuser
+mariadb_socket: /run/mysql/mysql.sock
+mariadb_bind_address: 127.0.0.1

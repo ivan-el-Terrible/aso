@@ -1,2 +1,6 @@
-# Entrada para phpMyAdmin.
-# Debe coordinar install.yml y configure.yml después de apache_php y mariadb.
+---
+- name: Comprobar la integración empaquetada de phpMyAdmin
+  ansible.builtin.import_tasks: install.yml
+
+- name: Activar phpMyAdmin en Apache
+  ansible.builtin.import_tasks: configure.yml
