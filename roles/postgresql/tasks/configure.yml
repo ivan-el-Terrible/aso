@@ -1,2 +1,27 @@
-# Configuración de PostgreSQL.
-# Debe usar templates/postgresql.conf.j2 y pg_hba.conf.j2, notificando handlers/main.yml.
+---
+- name: Incluir un archivo administrado sin reemplazar postgresql.conf del paquete
+  ansible.builtin.lineinfile:
+    path: "{{ postgresql_data_dir }}/postgresql.conf"
+    line: "include_if_exists = 'aso.conf'"
+    insertafter: EOF
+    state: present
+  notify: Reiniciar PostgreSQL
+
+- name: Configurar escucha y TLS en el fragmento administrado
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: "{{ postgresql_data_dir }}/aso.conf"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  notify: Reiniciar PostgreSQL
+
+- name: Configurar acceso local y remoto mediante pg_hba.conf
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgresql_data_dir }}/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+    backup: true
+  notify: Reiniciar PostgreSQL

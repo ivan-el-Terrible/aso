@@ -1,6 +1,6 @@
 # Ansible para openSUSE Leap 16.0
 
-Este proyecto despliega FTP (vsftpd), un recurso Samba y LAMP (Apache, PHP, MariaDB y phpMyAdmin) en nodos openSUSE Leap 16.0. PostgreSQL aún no forma parte de `site.yml`.
+Este proyecto despliega FTP (vsftpd), un recurso Samba, LAMP (Apache, PHP, MariaDB y phpMyAdmin) y PostgreSQL en nodos openSUSE Leap 16.0. PostgreSQL no instala pgAdmin ni phpPgAdmin.
 
 ## Preparación
 
@@ -10,6 +10,8 @@ En el equipo controlador instala Ansible y OpenSSL. El nodo necesita SSH, Python
 2. Define el nombre, grupo y directorio personal de la cuenta en `group_vars/all.yml`. Usa los mismos valores en `roles/ftp/defaults/main.yml` (`ftp_user`, `ftp_home`, `ftp_upload_dir`) y `roles/samba/defaults/main.yml` (`samba_user`, `samba_group`, `samba_archives_path`). Ajusta `ftp_firewall_zone` en `roles/firewall/defaults/main.yml` según la interfaz del nodo.
 3. Configura una sola contraseña cifrada para esa cuenta en `group_vars/destinos.yml`, bajo el nombre interno `publica_password`. FTP y Samba usan ese mismo valor; Ansible calcula un hash estable para Linux con `accounts_publica_password_salt`.
 4. Ajusta `mariadb_database` y `mariadb_app_user` en `roles/mariadb/defaults/main.yml`. La contraseña SQL independiente es `mariadb_app_password` en `group_vars/destinos.yml`; también debe quedar cifrada con Vault. En este controlador puedes consultar su valor en `.mariadb-app-password`, excluido de Git. Si creas otra clave Vault, vuelve a cifrar ambas variables.
+5. Ajusta `postgresql_db_name` y `postgresql_app_user` en `roles/postgresql/defaults/main.yml`. Por defecto, PostgreSQL reutiliza la contraseña Vault de la cuenta de aplicación MariaDB mediante `postgresql_app_password`; puedes definir otra variable Vault si quieres claves distintas. La cuenta `postgres` se administra localmente mediante autenticación `peer` y no necesita contraseña SQL.
+6. PostgreSQL escucha solo en el nodo por defecto. Para clientes remotos, configura `postgresql_listen_addresses` con la IP del nodo y `postgresql_allowed_cidrs` con las redes IPv4 autorizadas. El firewall abre el puerto configurado solo para esas redes y PostgreSQL exige TLS y contraseña. El certificado inicial es autofirmado; distribúyelo a los clientes que validen la identidad del servidor. Puedes sustituir el par `server.crt` y `server.key` por uno propio en `postgresql_data_dir` y volver a ejecutar el playbook.
 
 Ansible lee la clave Vault desde `.ansible-vault-key`. Si recibiste el proyecto sin esa clave, crea una nueva y vuelve a cifrar la contraseña:
 
@@ -51,6 +53,8 @@ smbclient //IP_DEL_NODO/archives -U USUARIO
 curl http://IP_DEL_NODO/aso-health.php
 ```
 
+Para comprobar PostgreSQL en el nodo, ejecuta `sudo -u postgres psql -d postgres -c '\l'` y `sudo -u postgres psql -d postgres -c '\du'`. El rol `verify` comprueba el servicio, la base, la autenticación de su cuenta y el uso de TLS desde el propio nodo.
+
 phpMyAdmin está en `http://IP_DEL_NODO/phpMyAdmin/` y acepta la cuenta SQL definida por `mariadb_app_user`; MariaDB permanece accesible solo desde el nodo. Apache sirve una página mínima de prueba PHP sin publicar detalles del entorno ni credenciales. En FTP, entra en `archivos` antes de subir archivos: la raíz del usuario no permite escritura. En Samba, el recurso `archives` apunta al directorio indicado por `samba_archives_path` y solo acepta la cuenta configurada. FTP y HTTP transmiten credenciales sin cifrar; úsalos únicamente en una red de confianza o configura TLS antes de exponerlos.
 
 ## Roles
@@ -58,13 +62,13 @@ phpMyAdmin está en `http://IP_DEL_NODO/phpMyAdmin/` y acepta la cuenta SQL defi
 | Rol | Estado y función |
 | --- | --- |
 | `preflight` | Activo: valida clave SSH, sistema y Zypper. |
-| `packages` | Activo: instala paquetes FTP, Samba, firewall y LAMP. |
+| `packages` | Activo: instala paquetes FTP, Samba, firewall, LAMP y PostgreSQL. |
 | `accounts` | Activo: crea la cuenta Linux y establece su contraseña. |
 | `ftp` | Activo: configura vsftpd y directorios. |
 | `samba` | Activo: configura el recurso, cuenta SMB y servicios. |
 | `apache_php` | Activo: inicia Apache con PHP y publica una comprobación mínima. |
 | `mariadb` | Activo: inicia MariaDB, crea la base y una cuenta SQL con contraseña Vault. |
 | `phpmyadmin` | Activo: habilita el alias Apache del paquete phpMyAdmin. |
-| `firewall` | Activo: permite SSH, FTP, Samba y HTTP. |
-| `verify` | Activo: comprueba servicios, permisos y el acceso local a LAMP. |
-| `postgresql` | Pendiente de integración en `site.yml`. |
+| `postgresql` | Activo: prepara TLS, configura accesos y crea una cuenta y una base de datos. |
+| `firewall` | Activo: permite SSH, FTP, Samba, HTTP y las redes PostgreSQL autorizadas. |
+| `verify` | Activo: comprueba servicios, permisos, LAMP y PostgreSQL con TLS. |

@@ -1,2 +1,56 @@
-# TLS de PostgreSQL.
-# Debe preparar certificados y parámetros consumidos por configure.yml; no incluye pgAdmin.
+---
+- name: Comprobar si ya hay una clave TLS para PostgreSQL
+  ansible.builtin.stat:
+    path: "{{ postgresql_data_dir }}/server.key"
+  register: postgresql_tls_key
+
+- name: Comprobar si ya hay un certificado TLS para PostgreSQL
+  ansible.builtin.stat:
+    path: "{{ postgresql_data_dir }}/server.crt"
+  register: postgresql_tls_cert
+
+- name: Exigir que la clave y el certificado existan juntos
+  ansible.builtin.assert:
+    that:
+      - postgresql_tls_key.stat.exists == postgresql_tls_cert.stat.exists
+    fail_msg: Hay una sola pieza TLS en PostgreSQL; completa o retira el par antes de continuar.
+
+- name: Crear un certificado TLS local cuando todavía no existe
+  ansible.builtin.command:
+    argv:
+      - openssl
+      - req
+      - -x509
+      - -newkey
+      - rsa:3072
+      - -noenc
+      - -days
+      - '3650'
+      - -keyout
+      - "{{ postgresql_data_dir }}/server.key"
+      - -out
+      - "{{ postgresql_data_dir }}/server.crt"
+      - -subj
+      - "/CN={{ postgresql_tls_common_name }}"
+      - -addext
+      - "subjectAltName={{ postgresql_tls_san }}"
+    creates: "{{ postgresql_data_dir }}/server.crt"
+  become_user: postgres
+  when: not postgresql_tls_cert.stat.exists
+  notify: Reiniciar PostgreSQL
+
+- name: Restringir los permisos de la clave privada TLS
+  ansible.builtin.file:
+    path: "{{ postgresql_data_dir }}/server.key"
+    owner: postgres
+    group: postgres
+    mode: '0600'
+  notify: Reiniciar PostgreSQL
+
+- name: Ajustar los permisos del certificado público TLS
+  ansible.builtin.file:
+    path: "{{ postgresql_data_dir }}/server.crt"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  notify: Reiniciar PostgreSQL

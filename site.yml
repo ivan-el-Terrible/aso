@@ -11,7 +11,7 @@
         name: preflight
         tasks_from: ssh_host_key
 
-- name: Configurar FTP, Samba y LAMP en openSUSE Leap 16.0
+- name: Configurar FTP, Samba, LAMP y PostgreSQL en openSUSE Leap 16.0
   hosts: destinos
   become: true
   gather_facts: true
@@ -54,7 +54,6 @@
     - apache_php
     - mariadb
     - phpmyadmin
+    - postgresql
     - firewall
     - verify
-
-# PostgreSQL continúa fuera de este despliegue.

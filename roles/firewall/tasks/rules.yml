@@ -29,3 +29,13 @@
     permanent: true
     immediate: true
     offline: true
+
+- name: Permitir PostgreSQL solo desde las redes IPv4 configuradas
+  ansible.posix.firewalld:
+    zone: "{{ ftp_firewall_zone }}"
+    rich_rule: 'rule family="ipv4" source address="{{ item }}" port port="{{ postgresql_port }}" protocol="tcp" accept'
+    state: enabled
+    permanent: true
+    immediate: true
+    offline: true
+  loop: "{{ postgresql_allowed_cidrs }}"

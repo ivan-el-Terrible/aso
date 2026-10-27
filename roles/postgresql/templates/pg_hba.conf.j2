@@ -1,1 +1,10 @@
-{# Reglas de acceso de PostgreSQL. configure.yml debe coordinarla con usuarios y TLS. #}
+# Reglas de acceso a PostgreSQL administradas por Ansible.
+# El administrador postgres usa la identidad local del sistema.
+local   all             postgres                                peer
+# La cuenta de la aplicación debe autenticarse con contraseña.
+local   all             all                                     scram-sha-256
+hostssl {{ postgresql_db_name }} {{ postgresql_app_user }} 127.0.0.1/32      scram-sha-256
+hostssl {{ postgresql_db_name }} {{ postgresql_app_user }} ::1/128           scram-sha-256
+{% for cidr in postgresql_allowed_cidrs %}
+hostssl {{ postgresql_db_name }} {{ postgresql_app_user }} {{ cidr }} scram-sha-256
+{% endfor %}

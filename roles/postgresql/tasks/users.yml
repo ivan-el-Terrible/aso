@@ -1,2 +1,11 @@
-# Usuarios y privilegios de PostgreSQL.
-# Debe ejecutarse después de configure.yml y consumir variables del rol o group_vars/.
+---
+- name: Asegurar la cuenta PostgreSQL propietaria de la base
+  community.postgresql.postgresql_user:
+    name: "{{ postgresql_app_user }}"
+    password: "{{ postgresql_app_password }}"
+    role_attr_flags: LOGIN,NOSUPERUSER,NOCREATEDB,NOCREATEROLE
+    state: present
+    login_user: postgres
+    login_db: postgres
+  become_user: postgres
+  no_log: true

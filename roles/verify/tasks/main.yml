@@ -10,3 +10,6 @@
 
 - name: Verificar LAMP después de configurar el firewall
   ansible.builtin.import_tasks: lamp.yml
+
+- name: Verificar PostgreSQL y su conexión TLS
+  ansible.builtin.import_tasks: postgresql.yml

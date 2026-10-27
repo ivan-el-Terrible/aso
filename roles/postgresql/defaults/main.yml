@@ -1,2 +1,14 @@
-# Valores predeterminados de PostgreSQL.
-# Deben alimentar instalación, usuarios, bases de datos y TLS.
+---
+# Credencial Vault compartida con la cuenta de aplicación MariaDB.
+# Cambia esta variable si cada motor debe usar una clave distinta.
+postgresql_app_password: "{{ mariadb_app_password }}"
+postgresql_db_name: mibase
+postgresql_app_user: alejandro
+postgresql_data_dir: /var/lib/pgsql/data
+postgresql_port: 5432
+postgresql_listen_addresses: localhost
+# Añade solo redes IPv4 de confianza para permitir clientes remotos con TLS.
+postgresql_allowed_cidrs: []
+# Configura el nombre y SAN de un certificado propio si se requiere confianza pública.
+postgresql_tls_common_name: "{{ ansible_facts.fqdn | default(inventory_hostname) }}"
+postgresql_tls_san: "IP:{{ ansible_host | default(inventory_hostname) }}"

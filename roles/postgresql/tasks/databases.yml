@@ -1,2 +1,9 @@
-# Bases de datos de PostgreSQL.
-# Debe depender del servidor configurado y relacionarse con users.yml.
+---
+- name: Asegurar la base de datos asignada al usuario PostgreSQL
+  community.postgresql.postgresql_db:
+    name: "{{ postgresql_db_name }}"
+    owner: "{{ postgresql_app_user }}"
+    state: present
+    login_user: postgres
+    maintenance_db: postgres
+  become_user: postgres

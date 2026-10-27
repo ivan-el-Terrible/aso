@@ -1,2 +1,17 @@
-# Instalación del servidor PostgreSQL.
-# Debe consumir packages y defaults/main.yml.
+---
+- name: Habilitar e iniciar PostgreSQL para inicializar su directorio de datos
+  ansible.builtin.systemd_service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Comprobar que el clúster PostgreSQL fue inicializado
+  ansible.builtin.stat:
+    path: "{{ postgresql_data_dir }}/PG_VERSION"
+  register: postgresql_cluster_version
+
+- name: Exigir un clúster inicializado antes de configurarlo
+  ansible.builtin.assert:
+    that:
+      - postgresql_cluster_version.stat.isreg | default(false)
+    fail_msg: PostgreSQL no inicializó su clúster en postgresql_data_dir.
