@@ -11,3 +11,12 @@
     - "{{ ftp_firewall_ssh_port }}/tcp"
     - "{{ ftp_firewall_control_port }}/tcp"
     - "{{ ftp_firewall_passive_ports }}/tcp"
+
+- name: Permitir Samba en la misma zona del nodo
+  ansible.posix.firewalld:
+    zone: "{{ ftp_firewall_zone }}"
+    service: samba
+    state: enabled
+    permanent: true
+    immediate: true
+    offline: true

@@ -1,3 +1,9 @@
 ---
+- name: Aplicar reinicios pendientes antes de comprobar los servicios
+  ansible.builtin.meta: flush_handlers
+
 - name: Verificar FTP después de configurar el firewall
   ansible.builtin.import_tasks: services.yml
+
+- name: Verificar Samba después de configurar el firewall
+  ansible.builtin.import_tasks: samba.yml

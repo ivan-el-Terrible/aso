@@ -11,7 +11,7 @@
         name: preflight
         tasks_from: ssh_host_key
 
-- name: Configurar cuentas y FTP en openSUSE Leap 16.0
+- name: Configurar cuentas, FTP y Samba en openSUSE Leap 16.0
   hosts: destinos
   become: true
   gather_facts: true
@@ -21,6 +21,7 @@
     - packages
     - accounts
     - ftp
+    - samba
     - firewall
     - verify
 

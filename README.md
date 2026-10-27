@@ -1,13 +1,13 @@
 # Ansible para openSUSE Leap 16.0
 
-Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con Ansible. El despliegue FTP ejecuta `preflight`, `packages`, `accounts`, `ftp`, `firewall` y `verify`; los demás servicios siguen como esqueleto.
+Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con Ansible. El despliegue ejecuta `preflight`, `packages`, `accounts`, `ftp`, `samba`, `firewall` y `verify`; los demás servicios siguen como esqueleto.
 
 ## Estructura
 
 ```text
 .
 ├── ansible.cfg                 # Opciones del controlador Ansible
-├── site.yml                    # Valida la clave SSH y coordina el despliegue FTP
+├── site.yml                    # Valida la clave SSH y coordina FTP y Samba
 ├── requirements.yml            # Colecciones para Zypper y firewalld
 ├── .gitignore                  # Exclusiones de Git que se definirán
 ├── README.md                   # Descripción y mapa del proyecto
@@ -15,7 +15,7 @@ Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con A
 │   └── hosts.ini               # Grupo destinos, dirección y huella SSH del servidor
 ├── group_vars/
 │   ├── all.yml                 # Cuentas comunes a todos los hosts
-│   └── destinos.yml            # Hash de contraseña del grupo «destinos»
+│   └── destinos.yml            # Hash Linux y contraseña SMB cifrada con Vault
 └── roles/
     ├── preflight/              # Validaciones previas
     ├── packages/               # Paquetes centralizados
@@ -30,29 +30,29 @@ Proyecto para organizar la configuración de servidores openSUSE Leap 16.0 con A
     └── verify/                 # Verificación de servicios
 ```
 
-`inventory/hosts.ini` define el grupo `destinos` con la dirección y la huella SSH del servidor; ajusta ambos valores si cambió el destino. `site.yml` primero registra la clave SSH verificada en el controlador y después ejecuta `preflight`, `packages`, `accounts`, `ftp`, `firewall` y `verify` en ese orden y con privilegios de administrador. `group_vars/all.yml` define la cuenta `publica`; `group_vars/destinos.yml` proporciona el hash de su contraseña. `requirements.yml` declara `community.general` para Zypper y `ansible.posix` para firewalld.
+`inventory/hosts.ini` define el grupo `destinos` con la dirección y la huella SSH del servidor; ajusta ambos valores si cambió el destino. `site.yml` primero registra la clave SSH verificada en el controlador y después ejecuta `preflight`, `packages`, `accounts`, `ftp`, `samba`, `firewall` y `verify` en ese orden y con privilegios de administrador. `group_vars/all.yml` define la cuenta Linux `publica`; `group_vars/destinos.yml` proporciona el hash de su contraseña de Linux y la contraseña SMB cifrada con Ansible Vault. `requirements.yml` declara `community.general` para Zypper y `ansible.posix` para firewalld.
 
-Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para sus valores predeterminados y `meta/main.yml` para sus metadatos. Los roles de servicios incluyen `handlers/main.yml` para recargas o reinicios. Donde corresponde, `tasks/` separa instalación, configuración, usuarios, directorios, bases de datos, TLS o reglas; `templates/` contiene archivos Jinja2 `.j2`. Los seis roles del despliegue FTP ya tienen tareas funcionales.
+Cada rol tiene `tasks/main.yml` como punto de entrada, `defaults/main.yml` para sus valores predeterminados y `meta/main.yml` para sus metadatos. Los roles de servicios incluyen `handlers/main.yml` para recargas o reinicios. Donde corresponde, `tasks/` separa instalación, configuración, usuarios, directorios, bases de datos, TLS o reglas; `templates/` contiene archivos Jinja2 `.j2`. Los siete roles del despliegue FTP y Samba ya tienen tareas funcionales.
 
 ## Roles
 
 | Rol | Responsabilidad prevista | Relación con los demás |
 | --- | --- | --- |
 | `preflight` | Registrar en el controlador una clave SSH cuya huella coincida con el inventario; después validar openSUSE Leap 16.0 y Zypper en el nodo. | La tarea local se ejecuta antes de la primera conexión SSH; las validaciones remotas preceden a FTP. |
-| `packages` | Detener PackageKit si está activo y centralizar la instalación de `vsftpd`, `firewalld` y `python3-firewall` con Zypper. | Evita que PackageKit bloquee Zypper y prepara los paquetes requeridos por `ftp` y `firewall`. |
-| `accounts` | Crear usuarios locales y establecer sus contraseñas mediante hashes. | Crea `publica` con `/home/publica` y configura la contraseña solicitada antes de ejecutar `ftp`. |
+| `packages` | Detener PackageKit si está activo e instalar `vsftpd`, Samba y los paquetes de firewalld en una sola tarea de Zypper. | Prepara los paquetes requeridos por `ftp`, `samba` y `firewall`. |
+| `accounts` | Crear usuarios locales y establecer sus contraseñas mediante hashes. | Crea `publica` con `/home/publica` antes de ejecutar `ftp` y `samba`. |
 | `apache_php` | Instalar y configurar Apache y PHP mediante sus plantillas. | Proporcionará el entorno web que necesita `phpmyadmin`. |
 | `mariadb` | Configurar el servidor MariaDB, sus usuarios y bases de datos. | Proporcionará la base de datos administrada desde `phpmyadmin`. |
 | `phpmyadmin` | Instalar y configurar la interfaz web de administración de MariaDB. | Dependerá de Apache/PHP y MariaDB. |
-| `samba` | Configurar Samba, sus usuarios, directorios y la plantilla `smb.conf.j2`. | Podrá reutilizar cuentas y rutas de `accounts`. |
+| `samba` | Configurar el recurso `archives`, registrar la contraseña SMB de `publica` y habilitar `smb` y `nmb`. | Reutiliza la cuenta Linux de `accounts` sin modificar su contraseña FTP. |
 | `ftp` | Instalar `vsftpd.conf.j2`, preparar `/home/publica` y `/home/publica/archivos`, y habilitar el servicio. | Verifica la cuenta creada por `accounts` y prepara un directorio escribible por `publica`. |
 | `postgresql` | Configurar PostgreSQL, usuarios, bases de datos y TLS. | Usará los paquetes centralizados; no contempla pgAdmin ni phpPgAdmin. |
-| `firewall` | Permitir SSH, `21/TCP` y `30000–30100/TCP` en firewalld. | Aplica reglas permanentes después de configurar FTP y respeta el puerto SSH configurado. |
-| `verify` | Comprobar servicios, escucha IPv4 local y permisos de los directorios FTP. | Se ejecuta al final, tras `firewall`. |
+| `firewall` | Permitir SSH, FTP y el servicio Samba en firewalld. | Aplica reglas permanentes después de configurar ambos servicios y respeta el puerto SSH configurado. |
+| `verify` | Comprobar servicios, escucha IPv4 local, cuenta Samba y permisos de los directorios compartidos. | Se ejecuta al final, tras `firewall`. |
 
 ## Ejecución desde el master
 
-Ejecuta los comandos Ansible en el **master** (`192.168.11.56`), dentro de este repositorio, con el usuario que administrará el despliegue. El nodo (`192.168.11.108`) solo necesita SSH y Python; no necesita tener Ansible instalado. Si entraste al nodo con `ssh`, vuelve al master con `exit`.
+Ejecuta los comandos Ansible en el **master**, dentro de este repositorio, con el usuario que administrará el despliegue. El nodo indicado en `inventory/hosts.ini` solo necesita SSH y Python; no necesita tener Ansible instalado. Si entraste al nodo con `ssh`, vuelve al master con `exit`.
 
 1. Comprueba que el master alcanza el puerto 22 del nodo y que `inventory/hosts.ini` contiene su IP, usuario SSH y huella ED25519. Obtén la huella en el nodo con `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub -E sha256` y compruébala por un canal de confianza antes de escribirla en el inventario. Si la IP o la clave del nodo cambian, actualiza esos datos antes de ejecutar el playbook. No desactives la comprobación de claves SSH para solucionar una discrepancia.
 2. Desde el master, prepara las dependencias y comprueba la sintaxis:
@@ -63,7 +63,7 @@ Ejecuta los comandos Ansible en el **master** (`192.168.11.56`), dentro de este 
    ansible-playbook --syntax-check site.yml
    ```
 
-3. Para registrar **solo** la clave SSH verificada en `~/.ssh/known_hosts` del usuario actual, sin desplegar FTP:
+3. Para registrar **solo** la clave SSH verificada en `~/.ssh/known_hosts` del usuario actual, sin desplegar los servicios:
 
    ```bash
    ansible-playbook site.yml --tags ssh_host_key
@@ -75,15 +75,21 @@ Ejecuta los comandos Ansible en el **master** (`192.168.11.56`), dentro de este 
    ansible destinos -m ansible.builtin.ping --ask-pass
    ```
 
-   Si usas una clave SSH para autenticarte, omite `--ask-pass`. `ping` debe responder con `pong`; verifica SSH y Python, no la instalación de FTP. La prueba con `ansible destinos -m ...` no ejecuta el registro automático: en un master nuevo, ejecuta primero el paso anterior. Usa el mismo usuario del master en ambos comandos, porque `known_hosts` es propio de cada usuario.
+   Si usas una clave SSH para autenticarte, omite `--ask-pass`. `ping` debe responder con `pong`; verifica SSH y Python, no la instalación de FTP o Samba. La prueba con `ansible destinos -m ...` no ejecuta el registro automático: en un master nuevo, ejecuta primero el paso anterior. Usa el mismo usuario del master en ambos comandos, porque `known_hosts` es propio de cada usuario.
 
-4. Para instalar y configurar FTP en el nodo, ejecuta el playbook **completo**:
+4. Para instalar y configurar FTP y Samba en el nodo, ejecuta el playbook **completo**:
 
    ```bash
    ansible-playbook site.yml --ask-pass
    ```
 
-   `--ask-pass` solicita la contraseña del usuario SSH del inventario (`root` en este ejemplo). Si te autenticas con una clave SSH, usa `ansible-playbook site.yml`. Si configuras un usuario SSH distinto que necesita `sudo` con contraseña, añade `--ask-become-pass`. No uses solo `--tags ssh_host_key` para desplegar: esa etiqueta prepara SSH y no ejecuta los roles de FTP. El primer play del despliegue comprueba la huella y registra la clave; el segundo ejecuta los roles y termina con `verify`. Confirma en el resumen `failed=0` y `unreachable=0`. Una ejecución fallida o una comprobación de sintaxis correcta no demuestran que el despliegue haya terminado.
+   `--ask-pass` solicita la contraseña del usuario SSH del inventario (`root` en este ejemplo). Si te autenticas con una clave SSH, usa `ansible-playbook site.yml`. Si configuras un usuario SSH distinto que necesita `sudo` con contraseña, añade `--ask-become-pass`. No uses solo `--tags ssh_host_key` para desplegar: esa etiqueta prepara SSH y no ejecuta los roles de FTP o Samba. El primer play comprueba la huella; el segundo ejecuta los roles y termina con `verify`. Ansible descifra `samba_password` del inventario para registrar la cuenta SMB sin preguntar su contraseña; la contraseña Linux/FTP no cambia. Confirma en el resumen `failed=0` y `unreachable=0`. Una ejecución fallida o una comprobación de sintaxis correcta no demuestran que el despliegue haya terminado.
+
+### Clave de Ansible Vault
+
+`ansible.cfg` usa `.ansible-vault-key` para descifrar `samba_password`. El archivo se creó en este master con permisos `0600` y `.gitignore` lo excluye: **no lo añadas ni lo subas a GitHub**. Consérvalo en un lugar seguro; al usar otro master, transfiérelo por un canal seguro a la raíz del repositorio y mantén el modo `0600`. Sin esa clave, la variable cifrada no se puede descifrar. Si defines `samba_password` por otro medio, el rol omite sus preguntas; si no está definida, la solicita dos veces al crear o cambiar la cuenta.
+
+Para cambiar la contraseña SMB, genera un nuevo bloque cifrado con `ansible-vault encrypt_string --prompt --name samba_password`, sustituye el bloque `samba_password: !vault |` de `group_vars/destinos.yml` y ejecuta `ansible-playbook site.yml --ask-pass -e samba_password_reset=true`. La contraseña anterior de Samba aparece en un commit previo del proyecto; cifrar el valor actual no elimina ese historial. Cámbiala si el repositorio ha sido compartido.
 
 ### Comprobar FTP desde el master
 
@@ -91,7 +97,7 @@ El rol `verify` confirma que `vsftpd` y `firewalld` están activos, que el puert
 
 ```bash
 printf 'Prueba de FTP\n' > /tmp/prueba-ftp.txt
-ftp -p 192.168.11.108
+ftp -p <IP_DEL_INVENTARIO>
 ```
 
 Identifícate como `publica` con la contraseña configurada para esa cuenta. Dentro de `ftp`, ejecuta:
@@ -114,6 +120,19 @@ cmp /tmp/prueba-ftp.txt /tmp/prueba-ftp-descargada.txt && echo 'Subida y descarg
 
 La raíz FTP no permite subir archivos: haz `cd archivos` antes de `put` o `mput`. Un `553 Could not create file` en la raíz es el comportamiento esperado. `mget` descarga archivos; `whoami` y `users` son comandos de la terminal, no del cliente FTP.
 
+### Comprobar Samba desde el master
+
+El recurso `archives` corresponde a `/opt/archives`. Solo `publica` puede acceder; el directorio es suyo, pertenece al grupo `publica` y tiene modo `2770`. Los archivos nuevos tienen como máximo `0660` y los directorios nuevos `0770`. La contraseña SMB es distinta de la contraseña Linux usada por FTP. Para verificar autenticación, lectura y escritura con `smbclient` en el master:
+
+```bash
+smbclient -L //<IP_DEL_INVENTARIO> -U publica
+smbclient //<IP_DEL_INVENTARIO>/archives -U publica
+```
+
+Introduce la contraseña Samba cuando se solicite. En el indicador `smb: \>` puedes probar `ls`, `put /tmp/prueba-ftp.txt prueba-samba.txt`, `get prueba-samba.txt /tmp/prueba-samba-descargada.txt` y `quit`. Compara los archivos con `cmp /tmp/prueba-ftp.txt /tmp/prueba-samba-descargada.txt`. En Windows, el recurso se abre como `\\<IP_DEL_INVENTARIO>\archives`. El firewall permite el servicio `samba` en la misma zona configurada para FTP.
+
+El rol usa `smbpasswd -s -a` mediante entrada estándar, sin pasar la contraseña como argumento del proceso. Si la cuenta ya existe y no se solicita un cambio, la tarea no vuelve a escribirla.
+
 Si falla la prueba, distingue el punto de fallo: un tiempo de espera en SSH indica un problema de red o del puerto 22; un error de clave SSH exige revisar la huella; `Permission denied` después de conectar por SSH apunta a la autenticación; `530` en FTP apunta al usuario o contraseña; `553` dentro de `archivos` exige revisar los permisos del nodo; y si el inicio de sesión funciona pero `ls` o una transferencia se detienen, revisa los puertos pasivos `30000–30100/TCP` y la zona del firewall. Si el nodo cambió legítimamente su clave SSH, verifica la nueva huella antes de actualizar el inventario y la entrada anterior de `known_hosts`.
 
 Si Zypper reintenta la instalación, el rol `packages` detiene previamente `packagekit.service` y `packagekit-background.service` cuando están activos. Si agota los reintentos, consulta el mensaje final de Zypper: otra operación de paquetes, un repositorio inaccesible o un error de descarga también pueden causar el fallo.
@@ -126,4 +145,4 @@ La plantilla fija el rango pasivo TCP `30000–30100`. `firewall` abre ese rango
 
 La configuración usa FTP **sin cifrado**: las credenciales y los datos viajan en texto claro. Úsala solo en una red de confianza y configura TLS antes de exponerla a otras redes. El servicio acepta usuarios locales mediante PAM; `anonymous_enable=NO` desactiva el acceso anónimo.
 
-El orden de los demás roles es el **diseño previsto**; todavía no se ejecutan desde `site.yml`.
+El orden de los demás roles es el **diseño previsto**; todavía no se ejecutan desde `site.yml`. La plantilla Samba solo habilita `[archives]`; las secciones `[homes]`, `[profiles]`, `[users]`, `[printers]` y `[print$]` del archivo de referencia no se activan porque el despliegue no prepara ni administra esos recursos.

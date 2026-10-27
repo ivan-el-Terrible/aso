@@ -23,13 +23,13 @@
       - "'packagekit.service' not in ansible_facts.services or ansible_facts.services['packagekit.service'].state != 'running'"
     fail_msg: PackageKit sigue activo y puede bloquear Zypper.
 
-- name: Instalar los paquetes de FTP con Zypper
+- name: Instalar los paquetes de FTP y Samba con Zypper
   community.general.zypper:
-    name: "{{ packages_ftp }}"
+    name: "{{ packages_ftp + packages_samba }}"
     state: present
     update_cache: true
-  register: packages_ftp_install
-  until: packages_ftp_install is succeeded
+  register: packages_services_install
+  until: packages_services_install is succeeded
   retries: 5
   delay: 4
 

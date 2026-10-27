@@ -1,16 +1,21 @@
+# Configuración de Samba para el recurso archives. La cuenta la administra
+# roles/accounts y la contraseña SMB se registra en roles/samba/tasks/users.yml.
 [global]
-   workgroup = WORKGROUP
-   server string = Servidor Samba openSUSE ASO
+   workgroup = {{ samba_workgroup }}
    security = user
-   map to guest = Bad User
-   log file = /var/log/samba/%m.log
-   max log size = 50
+   passdb backend = tdbsam
+   map to guest = Never
+   usershare allow guests = No
+   smb3 unix extensions = Yes
 
 [archives]
-   comment = my files
-   path = /opt/archives
-   browsable = yes
-   read only = no
-   inherit acls = yes
-   create mask = 0777
-   directory mask = 0777
+   comment = My files
+   path = {{ samba_archives_path }}
+   browseable = Yes
+   read only = No
+   valid users = {{ samba_user }}
+   guest ok = No
+   force group = {{ samba_group }}
+   inherit acls = Yes
+   create mask = 0660
+   directory mask = 0770

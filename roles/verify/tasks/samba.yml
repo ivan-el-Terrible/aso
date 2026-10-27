@@ -1,0 +1,43 @@
+---
+- name: Confirmar que smb y nmb estén activos
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.services['smb.service'].state == 'running'
+      - ansible_facts.services['nmb.service'].state == 'running'
+    fail_msg: Los servicios de Samba no están activos.
+
+- name: Comprobar que SMB acepta conexiones IPv4 locales
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 445
+    timeout: 10
+
+- name: Consultar permisos del recurso archives
+  ansible.builtin.stat:
+    path: "{{ samba_archives_path }}"
+  register: samba_archives_stat
+
+- name: Confirmar propietario y permisos de archives
+  ansible.builtin.assert:
+    that:
+      - samba_archives_stat.stat.isdir
+      - samba_archives_stat.stat.pw_name == samba_user
+      - samba_archives_stat.stat.gr_name == samba_group
+      - samba_archives_stat.stat.mode == '2770'
+    fail_msg: Los permisos de archives no coinciden con lo esperado.
+
+- name: Consultar el registro de publica en Samba
+  ansible.builtin.command:
+    argv:
+      - pdbedit
+      - -L
+      - -u
+      - "{{ samba_user }}"
+  register: samba_verified_user
+  changed_when: false
+
+- name: Confirmar que publica esté registrado en Samba
+  ansible.builtin.assert:
+    that:
+      - (samba_user ~ ':') in samba_verified_user.stdout
+    fail_msg: publica no figura en la base de usuarios Samba.

@@ -1,6 +1,6 @@
 ---
-- name: Reiniciar servicios samba
-  ansible.builtin.systemd:
+- name: Reiniciar servicios Samba
+  ansible.builtin.systemd_service:
     name: "{{ item }}"
     state: restarted
   loop:

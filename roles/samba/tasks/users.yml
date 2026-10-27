@@ -1,2 +1,71 @@
-# Usuarios de Samba.
-# Debe consumir cuentas de accounts y parámetros de group_vars/.
+---
+# La cuenta Linux y su contraseña FTP se administran en roles/accounts.
+- name: Consultar si publica ya está en la base de usuarios Samba
+  ansible.builtin.command:
+    argv:
+      - pdbedit
+      - -L
+      - -u
+      - "{{ samba_user }}"
+  register: samba_existing_user
+  changed_when: false
+  # pdbedit devuelve 255 cuando el usuario aún no existe. Otros fallos sí
+  # deben detener el despliegue para no confundirlos con un alta nueva.
+  failed_when: samba_existing_user.rc != 0 and not (samba_existing_user.rc == 255 and 'Username not found!' in samba_existing_user.stderr)
+
+- name: Determinar si hay que registrar o cambiar la contraseña SMB
+  ansible.builtin.set_fact:
+    samba_password_update_required: "{{ samba_password_reset | bool or (samba_user ~ ':') not in samba_existing_user.stdout }}"
+
+- name: Solicitar la contraseña SMB para el alta o el cambio
+  ansible.builtin.pause:
+    prompt: "Contraseña Samba para {{ samba_user }}"
+    echo: false
+  register: samba_password_first
+  when:
+    - samba_password_update_required
+    - samba_password is not defined
+  no_log: true
+
+- name: Confirmar la contraseña SMB
+  ansible.builtin.pause:
+    prompt: "Repite la contraseña Samba para {{ samba_user }}"
+    echo: false
+  register: samba_password_second
+  when:
+    - samba_password_update_required
+    - samba_password is not defined
+  no_log: true
+
+- name: Comprobar que las contraseñas introducidas coincidan
+  ansible.builtin.assert:
+    that:
+      - samba_password_first.user_input | length > 0
+      - samba_password_first.user_input == samba_password_second.user_input
+    fail_msg: Las contraseñas Samba están vacías o no coinciden.
+  when:
+    - samba_password_update_required
+    - samba_password is not defined
+  no_log: true
+
+- name: Exigir una contraseña Samba cuando se proporciona mediante variable
+  ansible.builtin.assert:
+    that:
+      - samba_password | length > 0
+    fail_msg: La variable samba_password no puede estar vacía.
+  when:
+    - samba_password_update_required
+    - samba_password is defined
+  no_log: true
+
+- name: Registrar la contraseña en la base de Samba
+  ansible.builtin.command:
+    argv:
+      - smbpasswd
+      - -s
+      - -a
+      - "{{ samba_user }}"
+    stdin: "{{ (samba_password if samba_password is defined else samba_password_first.user_input) ~ '\n' ~ (samba_password if samba_password is defined else samba_password_first.user_input) ~ '\n' }}"
+    stdin_add_newline: false
+  when: samba_password_update_required
+  no_log: true

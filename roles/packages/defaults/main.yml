@@ -1,6 +1,9 @@
 ---
-# Los demás servicios añadirán sus paquetes aquí al implementarse.
+# Los servicios usan una única instalación centralizada en tasks/main.yml.
 packages_ftp:
   - vsftpd
   - firewalld
   - python3-firewall
+packages_samba:
+  - samba
+  - samba-client

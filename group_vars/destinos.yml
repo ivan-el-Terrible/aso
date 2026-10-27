@@ -1,4 +1,13 @@
 ---
+# Contraseña SMB de publica cifrada con Ansible Vault.
+samba_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          30613762376633613632353635623866396166363431333236393232613331333563343535363639
+          3538356563363433316265336632636263373335333839370a343265343266303531663935376635
+          39363166626266346164313433376661356465303633653234303065396630636130653135366331
+          3733663862343235610a353535353564623937646362613137653136653265386335336231306432
+          3933
+
 # Hash SHA-512 de la contraseña solicitada para publica. Evita guardar texto
 # claro en el repositorio; cambia esta credencial antes de usarla fuera del
 # laboratorio y considera cifrar este valor con Ansible Vault.

@@ -1,2 +1,8 @@
-# Valores predeterminados de Samba.
-# Deben alimentar usuarios, directorios, recursos compartidos y configuración.
+---
+# La cuenta Linux se crea una sola vez en roles/accounts.
+samba_user: publica
+samba_group: publica
+samba_archives_path: /opt/archives
+samba_workgroup: WORKGROUP
+# Permite cambiar la contraseña SMB explícitamente en una ejecución posterior.
+samba_password_reset: false
