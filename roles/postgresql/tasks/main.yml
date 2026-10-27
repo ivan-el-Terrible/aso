@@ -1,10 +1,12 @@
 # Entrada para PostgreSQL.
-# Debe coordinar instalación, configuración, usuarios, bases de datos y TLS.
 ---
-- name: Incluir tareas de instalación
+- name: Incluir tareas de instalacion
   include_tasks: install.yml
 
-- name: Incluir tareas de configuración y cifrado
+- name: Incluir tareas de certificados TLS
+  include_tasks: tls.yml
+
+- name: Incluir tareas de configuracion y cifrado
   include_tasks: configure.yml
 
 - name: Incluir tareas de usuarios
