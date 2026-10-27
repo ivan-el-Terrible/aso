@@ -6,9 +6,11 @@ postgresql_db_name: mibase
 postgresql_app_user: alejandro
 postgresql_data_dir: /var/lib/pgsql/data
 postgresql_port: 5432
-postgresql_listen_addresses: localhost
-# Añade solo redes IPv4 de confianza para permitir clientes remotos con TLS.
-postgresql_allowed_cidrs: []
+postgresql_listen_addresses: '*'
+postgresql_max_connections: 100
+# La configuración aportada en tarea5-postgresql acepta cualquier origen IPv4.
+postgresql_allowed_cidrs:
+  - 0.0.0.0/0
 # Configura el nombre y SAN de un certificado propio si se requiere confianza pública.
 postgresql_tls_common_name: "{{ ansible_facts.fqdn | default(inventory_hostname) }}"
 postgresql_tls_san: "IP:{{ ansible_host | default(inventory_hostname) }}"

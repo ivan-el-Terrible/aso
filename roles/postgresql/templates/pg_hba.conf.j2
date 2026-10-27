@@ -1,10 +1,7 @@
-# Reglas de acceso a PostgreSQL administradas por Ansible.
-# El administrador postgres usa la identidad local del sistema.
-local   all             postgres                                peer
-# La cuenta de la aplicación debe autenticarse con contraseña.
-local   all             all                                     scram-sha-256
-hostssl {{ postgresql_db_name }} {{ postgresql_app_user }} 127.0.0.1/32      scram-sha-256
-hostssl {{ postgresql_db_name }} {{ postgresql_app_user }} ::1/128           scram-sha-256
+# Reglas de tarea5-postgresql, administradas por Ansible.
+# Las conexiones por socket local no piden contraseña.
+local   all             all                                     trust
 {% for cidr in postgresql_allowed_cidrs %}
-hostssl {{ postgresql_db_name }} {{ postgresql_app_user }} {{ cidr }} scram-sha-256
+hostssl all             all             {{ cidr }}               scram-sha-256
+host    all             all             {{ cidr }}               scram-sha-256
 {% endfor %}
