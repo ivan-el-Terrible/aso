@@ -24,7 +24,7 @@
   register: samba_password_first
   when:
     - samba_password_update_required
-    - samba_password is not defined
+    - publica_password is not defined
   no_log: true
 
 - name: Confirmar la contraseña SMB
@@ -34,7 +34,7 @@
   register: samba_password_second
   when:
     - samba_password_update_required
-    - samba_password is not defined
+    - publica_password is not defined
   no_log: true
 
 - name: Comprobar que las contraseñas introducidas coincidan
@@ -45,17 +45,17 @@
     fail_msg: Las contraseñas Samba están vacías o no coinciden.
   when:
     - samba_password_update_required
-    - samba_password is not defined
+    - publica_password is not defined
   no_log: true
 
 - name: Exigir una contraseña Samba cuando se proporciona mediante variable
   ansible.builtin.assert:
     that:
-      - samba_password | length > 0
-    fail_msg: La variable samba_password no puede estar vacía.
+      - publica_password | length > 0
+    fail_msg: La variable publica_password no puede estar vacía.
   when:
     - samba_password_update_required
-    - samba_password is defined
+    - publica_password is defined
   no_log: true
 
 - name: Registrar la contraseña en la base de Samba
@@ -65,7 +65,7 @@
       - -s
       - -a
       - "{{ samba_user }}"
-    stdin: "{{ (samba_password if samba_password is defined else samba_password_first.user_input) ~ '\n' ~ (samba_password if samba_password is defined else samba_password_first.user_input) ~ '\n' }}"
+    stdin: "{{ (publica_password if publica_password is defined else samba_password_first.user_input) ~ '\n' ~ (publica_password if publica_password is defined else samba_password_first.user_input) ~ '\n' }}"
     stdin_add_newline: false
   when: samba_password_update_required
   no_log: true

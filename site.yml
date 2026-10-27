@@ -16,6 +16,35 @@
   become: true
   gather_facts: true
   tags: deploy
+  pre_tasks:
+    - name: Comprobar que la contraseña compartida esté cifrada y disponible
+      ansible.builtin.assert:
+        that:
+          - publica_password is defined
+          - publica_password | length > 0
+        fail_msg: Define publica_password con Ansible Vault en group_vars/destinos.yml.
+      no_log: true
+
+    - name: Derivar el hash Linux desde la contraseña cifrada de publica
+      ansible.builtin.command:
+        argv:
+          - openssl
+          - passwd
+          - -6
+          - -salt
+          - "{{ accounts_publica_password_salt }}"
+          - -stdin
+        stdin: "{{ publica_password }}"
+      delegate_to: localhost
+      become: false
+      register: accounts_publica_hash_result
+      changed_when: false
+      no_log: true
+
+    - name: Compartir el hash Linux con el rol accounts
+      ansible.builtin.set_fact:
+        accounts_publica_password_hash: "{{ accounts_publica_hash_result.stdout }}"
+      no_log: true
   roles:
     - preflight
     - packages
