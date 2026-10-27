@@ -1,2 +1,7 @@
-# Instalación de Apache y PHP.
-# Debe consumir packages y defaults/main.yml; configure.yml depende de su resultado.
+---
+# La instalación de apache2, mod_php8 y php8-mysql ocurre en packages.
+- name: Habilitar e iniciar Apache
+  ansible.builtin.systemd_service:
+    name: apache2
+    enabled: true
+    state: started

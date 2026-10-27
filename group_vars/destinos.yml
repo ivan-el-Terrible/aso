@@ -10,3 +10,13 @@ publica_password: !vault |
 
 # Sal pública y estable para que el hash Linux sea idéntico al reejecutar.
 accounts_publica_password_salt: gEtVPWZDnEZYARYz
+
+# Contraseña independiente de la cuenta SQL definida en roles/mariadb/defaults/main.yml.
+# La copia local .mariadb-app-password está excluida de Git para consultar el valor.
+mariadb_app_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36666532656365386136353562313730653233666564376635323634363237353762633066313930
+          3963386534363239653136376461366661626239306533310a306331326634363739373939643239
+          30613463646261336263346164373838303063336565653361633536646661623834343766636366
+          3865636131373832620a663931303766633466343737346666643431306439633362316164316235
+          6664

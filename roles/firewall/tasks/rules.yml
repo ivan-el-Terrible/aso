@@ -20,3 +20,12 @@
     permanent: true
     immediate: true
     offline: true
+
+- name: Permitir HTTP para Apache y phpMyAdmin en la zona del nodo
+  ansible.posix.firewalld:
+    zone: "{{ ftp_firewall_zone }}"
+    service: http
+    state: enabled
+    permanent: true
+    immediate: true
+    offline: true

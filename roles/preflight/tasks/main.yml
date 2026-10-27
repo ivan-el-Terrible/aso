@@ -5,7 +5,7 @@
     that:
       - ansible_facts['distribution'] is match('^openSUSE')
       - ansible_facts['distribution_version'] == '16.0'
-    fail_msg: Este despliegue FTP requiere openSUSE Leap 16.0.
+    fail_msg: Este despliegue requiere openSUSE Leap 16.0.
 
 - name: Comprobar que Zypper esté disponible
   ansible.builtin.command: zypper --version

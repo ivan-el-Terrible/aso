@@ -1,5 +1,5 @@
 ---
-- name: Preparar reglas de acceso para SSH, FTP y Samba
+- name: Preparar reglas de acceso para SSH, FTP, Samba y HTTP
   ansible.builtin.import_tasks: rules.yml
 
 # Las reglas permanentes se aplican antes de iniciar firewalld; si ya estaba

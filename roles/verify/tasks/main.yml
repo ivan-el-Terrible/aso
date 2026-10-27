@@ -7,3 +7,6 @@
 
 - name: Verificar Samba después de configurar el firewall
   ansible.builtin.import_tasks: samba.yml
+
+- name: Verificar LAMP después de configurar el firewall
+  ansible.builtin.import_tasks: lamp.yml

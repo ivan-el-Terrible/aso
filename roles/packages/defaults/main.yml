@@ -7,3 +7,14 @@ packages_ftp:
 packages_samba:
   - samba
   - samba-client
+packages_lamp:
+  - apache2
+  - php8
+  - php8-cli
+  - apache2-mod_php8
+  - php8-mysql
+  - phpMyAdmin
+  - phpMyAdmin-apache
+  - mariadb
+  - mariadb-client
+  - python313-PyMySQL

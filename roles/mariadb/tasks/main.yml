@@ -1,2 +1,25 @@
-# Entrada para MariaDB.
-# Debe coordinar instalación, configuración, usuarios y bases de datos después de packages.
+---
+- name: Validar las variables de la base de datos
+  ansible.builtin.assert:
+    that:
+      - mariadb_app_password is defined
+      - mariadb_app_password | length > 0
+      - mariadb_database is match('^[A-Za-z][A-Za-z0-9_]*$')
+      - mariadb_app_user is match('^[A-Za-z][A-Za-z0-9_]*$')
+    fail_msg: Define mariadb_app_password con Vault y usa nombres SQL sencillos.
+  no_log: true
+
+- name: Configurar MariaDB después de packages
+  ansible.builtin.import_tasks: configure.yml
+
+- name: Habilitar el servidor MariaDB
+  ansible.builtin.import_tasks: install.yml
+
+- name: Aplicar cualquier reinicio pendiente de MariaDB
+  ansible.builtin.meta: flush_handlers
+
+- name: Crear la base de datos de la aplicación
+  ansible.builtin.import_tasks: databases.yml
+
+- name: Crear la cuenta SQL y sus privilegios
+  ansible.builtin.import_tasks: users.yml

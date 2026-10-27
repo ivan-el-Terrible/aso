@@ -11,7 +11,7 @@
         name: preflight
         tasks_from: ssh_host_key
 
-- name: Configurar cuentas, FTP y Samba en openSUSE Leap 16.0
+- name: Configurar FTP, Samba y LAMP en openSUSE Leap 16.0
   hosts: destinos
   become: true
   gather_facts: true
@@ -51,7 +51,10 @@
     - accounts
     - ftp
     - samba
+    - apache_php
+    - mariadb
+    - phpmyadmin
     - firewall
     - verify
 
-# Los demás roles del proyecto siguen pendientes de implementación.
+# PostgreSQL continúa fuera de este despliegue.
