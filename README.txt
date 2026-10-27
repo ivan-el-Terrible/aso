@@ -33,26 +33,30 @@ aso/
 - users.yml: Automatiza la creación de roles administrativos y superusuarios (por ejemplo, el usuario `alejandro`) con sus respectivas credenciales y privilegios.
 - databases.yml: Se encarga de inicializar bases de datos personalizadas (como `mibase`) y asociarlas directamente a sus respectivos propietarios.
 
-4. FLUJO DE EJECUCIÓN PASO A PASO
----------------------------------
-Para replicar y ejecutar exitosamente este despliegue en cualquier máquina virtual objetivo (como el entorno de prueba de Kate en `192.168.101.95`), se sigue este flujo operativo:
+4. FLUJO DE EJECUCIÓN PASO A PASO Y SEGURIDAD (ANSIBLE VAULT)
+-------------------------------------------------------------
+Para replicar y ejecutar exitosamente este despliegue protegiendo las credenciales sensibles, se utiliza Ansible Vault:
 
 Paso 1: Clonar y actualizar el repositorio
-Se asegura la obtención de la última versión del código desde la rama correspondiente en GitHub:
    git fetch origin
-   git checkout tarea5-postgresql
-   git pull origin tarea5-postgresql
+   git checkout main
+   git pull origin main
 
-Paso 2: Configurar el inventario
-En el archivo `inventory/hosts.ini`, se especifican las credenciales de conexión SSH y de escalación de privilegios (`become`) para evitar bloqueos de autenticación:
+Paso 2: Configurar y cifrar el inventario
+En el archivo `inventory/hosts.ini`, se definen los nodos y credenciales de conexión SSH y sudo:
    [destinos]
-   192.168.101.95 ansible_user=kate ansible_password=mundolibre ansible_become_password=mundolibre
+   192.168.101.95 ansible_user=kate ansible_password=<TU_PASSWORD> ansible_become_password=<TU_PASSWORD>
+
+Por políticas de seguridad, las credenciales no se almacenan en texto plano, sino cifradas con AES256 mediante Ansible Vault:
+   ansible-vault encrypt inventory/hosts.ini
+
+(Si se desea editar el inventario posteriormente, se utiliza: `ansible-vault edit inventory/hosts.ini`)
 
 Paso 3: Lanzar el Playbook
-Desde la raíz del proyecto, se ejecuta la automatización completa:
-   ansible-playbook -i inventory/hosts.ini site.yml
+Desde la raíz del proyecto, se ejecuta la automatización solicitando la clave de descifrado en tiempo de ejecución:
+   ansible-playbook -i inventory/hosts.ini site.yml --ask-vault-pass
 
-El motor de Ansible procesará el `site.yml`, interpretará el rol `postgresql` y ejecutará de forma secuencial las 11 tareas modulares garantizando un estado final limpio, sin errores y con una ejecución totalmente idempotente (`failed=0`).
+El motor de Ansible descifrará las credenciales en memoria, procesará el `site.yml` y ejecutará las 11 tareas modulares garantizando una ejecución limpia e idempotente (`failed=0`).
 
 5. VERIFICACIÓN Y COMPROBACIÓN DEL ENTORNE
 ------------------------------------------
