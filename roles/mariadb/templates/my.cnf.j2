@@ -1,1 +1,3 @@
-{# Configuración de MariaDB. configure.yml debe renderizarla y notificar handlers/main.yml. #}
+# Configuración local de MariaDB, aplicada por el rol mariadb.
+[mysqld]
+bind-address = {{ mariadb_bind_address }}

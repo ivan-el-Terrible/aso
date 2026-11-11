@@ -1,2 +1,7 @@
-# Valores predeterminados del firewall.
-# Deben definir zonas, servicios y puertos consumidos por rules.yml.
+---
+# La zona debe corresponder a la interfaz que recibe conexiones FTP y SSH.
+ftp_firewall_zone: public
+ftp_firewall_control_port: 21
+# Debe coincidir con pasv_min_port y pasv_max_port de vsftpd.conf.j2.
+ftp_firewall_passive_ports: 30000-30100
+ftp_firewall_ssh_port: "{{ ansible_port | default(22) }}"

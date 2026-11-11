@@ -1,2 +1,2 @@
-# Handlers del firewall.
-# Deben recibir notificaciones desde rules.yml para recargar reglas.
+# Las reglas de tasks/rules.yml se aplican inmediatamente cuando firewalld
+# está activo y se cargan al iniciarlo si aún no estaba en ejecución.

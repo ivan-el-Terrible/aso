@@ -1,2 +1,4 @@
 # Exclusiones del proyecto.
 # Debe proteger secretos y temporales relacionados con inventory/ y group_vars/.
+.ansible-vault-key
+.mariadb-app-password

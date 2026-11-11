@@ -1,2 +1,10 @@
-# Configuración de Samba.
-# Debe renderizar templates/smb.conf.j2 y notificar handlers/main.yml.
+---
+- name: Desplegar y validar smb.conf
+  ansible.builtin.template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: '0644'
+    validate: testparm -s %s
+  notify: Reiniciar servicios Samba

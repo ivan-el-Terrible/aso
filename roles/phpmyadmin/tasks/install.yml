@@ -1,2 +1,12 @@
-# Instalación de phpMyAdmin.
-# Debe consumir packages y depender de Apache/PHP y MariaDB.
+---
+# packages instaló phpMyAdmin y Apache/PHP; se utiliza el alias del paquete.
+- name: Comprobar que existe el alias Apache de phpMyAdmin
+  ansible.builtin.stat:
+    path: /etc/apache2/conf.d/phpMyAdmin.conf
+  register: phpmyadmin_alias_file
+
+- name: Exigir la configuración integrada de phpMyAdmin
+  ansible.builtin.assert:
+    that:
+      - phpmyadmin_alias_file.stat.isreg | default(false)
+    fail_msg: El paquete phpMyAdmin no proporcionó su configuración para Apache.

@@ -1,2 +1,7 @@
-# Instalación del servidor MariaDB.
-# Debe consumir packages y defaults/main.yml; configure.yml depende de este paso.
+---
+# packages ya instaló mariadb, mariadb-client y el conector PyMySQL.
+- name: Habilitar e iniciar MariaDB
+  ansible.builtin.systemd_service:
+    name: mariadb
+    enabled: true
+    state: started

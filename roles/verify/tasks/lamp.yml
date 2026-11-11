@@ -1,0 +1,89 @@
+---
+- name: Consultar los servicios de LAMP
+  ansible.builtin.service_facts:
+
+- name: Confirmar que Apache y MariaDB estén activos
+  ansible.builtin.assert:
+    that:
+      - "'apache2.service' in ansible_facts.services"
+      - "ansible_facts.services['apache2.service'].state == 'running'"
+      - "'mariadb.service' in ansible_facts.services"
+      - "ansible_facts.services['mariadb.service'].state == 'running'"
+    fail_msg: Apache o MariaDB no están activos.
+
+- name: Comprobar que Apache ejecuta PHP
+  ansible.builtin.uri:
+    url: http://127.0.0.1/aso-health.php
+    return_content: true
+    status_code: 200
+  register: verify_php_http
+  retries: 5
+  delay: 2
+  until: verify_php_http.status == 200
+
+- name: Confirmar que PHP procesó la página de prueba
+  ansible.builtin.assert:
+    that:
+      - "'PHP y MySQL activos' in verify_php_http.content"
+      - "'<?php' not in verify_php_http.content"
+    fail_msg: Apache no procesó el archivo PHP.
+
+- name: Comprobar la página de acceso a phpMyAdmin
+  ansible.builtin.uri:
+    url: "http://127.0.0.1{{ phpmyadmin_path }}"
+    status_code: 200
+  register: verify_phpmyadmin_http
+  retries: 5
+  delay: 2
+  until: verify_phpmyadmin_http.status == 200
+
+- name: Probar la conexión de la cuenta SQL mediante PyMySQL
+  community.mysql.mysql_query:
+    login_user: "{{ mariadb_app_user }}"
+    login_password: "{{ mariadb_app_password }}"
+    login_db: "{{ mariadb_database }}"
+    login_unix_socket: "{{ mariadb_socket }}"
+    config_file: ''
+    query: SELECT 1 AS ok
+  changed_when: false
+  no_log: true
+
+- name: Probar la conexión de PHP con MariaDB sin guardar credenciales
+  ansible.builtin.command:
+    argv:
+      - php
+      - -r
+      - |
+        if (!extension_loaded('mysqli')) { exit(20); }
+        $password = stream_get_contents(STDIN);
+        try {
+            $db = new mysqli('localhost', $argv[1], $password, $argv[2], null, $argv[3]);
+        } catch (Throwable $error) {
+            if ($error->getCode() == 1045) { exit(23); }
+            exit(21);
+        }
+        try {
+            $result = $db->query('SELECT 1');
+            if (!$result || $result->fetch_row()[0] != 1) { exit(22); }
+        } catch (Throwable $error) {
+            exit(22);
+        }
+      - "{{ mariadb_app_user }}"
+      - "{{ mariadb_database }}"
+      - "{{ mariadb_socket }}"
+    stdin: "{{ mariadb_app_password }}"
+    stdin_add_newline: false
+    expand_argument_vars: false
+  register: verify_php_mariadb
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: Confirmar que PHP puede consultar MariaDB
+  ansible.builtin.assert:
+    that:
+      - verify_php_mariadb.rc == 0
+    fail_msg: >-
+      La prueba PHP-MariaDB falló (código {{ verify_php_mariadb.rc }}).
+      20: falta mysqli en PHP CLI; 21: error de conexión al socket;
+      22: falló SELECT 1; 23: autenticación SQL rechazada.

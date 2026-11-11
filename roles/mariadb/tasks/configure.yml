@@ -1,2 +1,9 @@
-# Configuración de MariaDB.
-# Debe usar templates/my.cnf.j2 y notificar handlers/main.yml.
+---
+- name: Mantener MariaDB accesible únicamente desde el propio nodo
+  ansible.builtin.template:
+    src: my.cnf.j2
+    dest: /etc/my.cnf.d/90-aso.cnf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reiniciar MariaDB

@@ -1,0 +1,43 @@
+---
+- name: Consultar el estado de PostgreSQL
+  ansible.builtin.service_facts:
+
+- name: Confirmar que PostgreSQL esté activo
+  ansible.builtin.assert:
+    that:
+      - "'postgresql.service' in ansible_facts.services"
+      - "ansible_facts.services['postgresql.service'].state == 'running'"
+    fail_msg: El servicio PostgreSQL no está activo.
+
+- name: Confirmar que PostgreSQL acepta conexiones TCP locales
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ postgresql_port }}"
+    timeout: 10
+
+- name: Consultar la base con la cuenta de aplicación mediante TLS
+  community.postgresql.postgresql_query:
+    login_host: 127.0.0.1
+    port: "{{ postgresql_port }}"
+    login_user: "{{ postgresql_app_user }}"
+    login_password: "{{ postgresql_app_password }}"
+    db: "{{ postgresql_db_name }}"
+    ssl_mode: require
+    query: SELECT ssl AS tls_activo FROM pg_stat_ssl WHERE pid = pg_backend_pid()
+  register: verify_postgresql_tls
+  changed_when: false
+  no_log: true
+
+- name: Confirmar que la consulta usó TLS
+  ansible.builtin.assert:
+    that:
+      - verify_postgresql_tls.query_result[0].tls_activo | bool
+    fail_msg: PostgreSQL respondió sin una conexión TLS.
+
+- name: Confirmar que PHP dispone de la extensión PostgreSQL
+  ansible.builtin.command:
+    argv:
+      - php
+      - -r
+      - "exit(extension_loaded('pgsql') ? 0 : 1);"
+  changed_when: false

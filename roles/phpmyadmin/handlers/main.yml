@@ -1,2 +1,1 @@
-# Handlers de phpMyAdmin.
-# Deben coordinar acciones sobre Apache/PHP cuando configure.yml lo requiera.
+# phpMyAdmin reutiliza el handler Reiniciar Apache del rol apache_php.

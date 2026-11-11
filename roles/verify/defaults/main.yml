@@ -1,2 +1,2 @@
-# Valores predeterminados de verificación.
-# Deben definir servicios y endpoints esperados para services.yml.
+# services.yml comprueba FTP; samba.yml y lamp.yml completan la verificación.
+# La ruta de phpMyAdmin procede de phpmyadmin/defaults/main.yml.

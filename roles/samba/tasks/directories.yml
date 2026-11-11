@@ -1,2 +1,8 @@
-# Directorios compartidos de Samba.
-# Debe usar rutas de accounts y coordinarse con templates/smb.conf.j2.
+---
+- name: Crear el directorio compartido para publica
+  ansible.builtin.file:
+    path: "{{ samba_archives_path }}"
+    state: directory
+    owner: "{{ samba_user }}"
+    group: "{{ samba_group }}"
+    mode: '2770'

@@ -1,2 +1,9 @@
-# Configuración de vsftpd.
-# Debe renderizar templates/vsftpd.conf.j2 y notificar handlers/main.yml.
+---
+- name: Instalar la configuración de vsftpd
+  ansible.builtin.template:
+    src: vsftpd.conf.j2
+    dest: "{{ ftp_config_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reiniciar vsftpd

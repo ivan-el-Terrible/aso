@@ -1,2 +1,5 @@
-# Handlers de Apache y PHP.
-# Deben recibir notificaciones desde configure.yml y coordinarse con phpmyadmin.
+---
+- name: Reiniciar Apache
+  ansible.builtin.systemd_service:
+    name: apache2
+    state: restarted

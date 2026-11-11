@@ -1,2 +1,26 @@
-# Listas predeterminadas de paquetes.
-# Deben ser consumidas por tasks/main.yml y reutilizadas por los roles de servicios.
+---
+# Los servicios usan una única instalación centralizada en tasks/main.yml.
+packages_ftp:
+  - vsftpd
+  - firewalld
+  - python3-firewall
+packages_samba:
+  - samba
+  - samba-client
+packages_lamp:
+  - apache2
+  - php8
+  - php8-cli
+  - apache2-mod_php8
+  - php8-mysql
+  - phpMyAdmin
+  - phpMyAdmin-apache
+  - mariadb
+  - mariadb-client
+  - python313-PyMySQL
+packages_postgresql:
+  - postgresql
+  - postgresql-server
+  - php8-pgsql
+  - python313-psycopg2
+  - openssl

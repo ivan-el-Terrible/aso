@@ -1,2 +1,3 @@
-# Valores predeterminados de phpMyAdmin.
-# Deben alimentar instalación, configuración e integración con MariaDB.
+---
+# La ruta HTTP la publica el alias incluido en el paquete phpMyAdmin.
+phpmyadmin_path: /phpMyAdmin/

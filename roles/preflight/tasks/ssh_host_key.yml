@@ -1,0 +1,62 @@
+---
+# Se ejecuta en el controlador antes de abrir la conexión SSH con el destino.
+- name: Exigir la huella SSH esperada para cada destino
+  ansible.builtin.assert:
+    that:
+      - ssh_host_key_fingerprint | default('') is match('^SHA256:[A-Za-z0-9+/]+=?$')
+    fail_msg: Define ssh_host_key_fingerprint en el inventario para este destino.
+
+- name: Leer la clave ED25519 pública del destino
+  ansible.builtin.command:
+    argv:
+      - ssh-keyscan
+      - -T
+      - '5'
+      - -t
+      - ed25519
+      - -p
+      - "{{ ansible_port | default(22) | string }}"
+      - "{{ ansible_host | default(inventory_hostname) }}"
+  register: preflight_ssh_host_key
+  changed_when: false
+
+- name: Separar la clave ED25519 de los comentarios del escaneo
+  ansible.builtin.set_fact:
+    preflight_ssh_host_key_lines: "{{ preflight_ssh_host_key.stdout_lines | select('search', ' ssh-ed25519 ') | list }}"
+
+- name: Exigir una sola clave ED25519 del destino
+  ansible.builtin.assert:
+    that:
+      - preflight_ssh_host_key_lines | length == 1
+    fail_msg: No se pudo obtener una única clave ED25519 del destino.
+
+- name: Calcular la huella de la clave recibida
+  ansible.builtin.command:
+    argv:
+      - ssh-keygen
+      - -lf
+      - '-'
+      - -E
+      - sha256
+    stdin: "{{ preflight_ssh_host_key_lines[0] }}"
+  register: preflight_ssh_fingerprint
+  changed_when: false
+
+- name: Verificar la identidad SSH del destino
+  ansible.builtin.assert:
+    that:
+      - preflight_ssh_fingerprint.stdout.split()[1] == ssh_host_key_fingerprint
+    fail_msg: La huella SSH recibida no coincide con la registrada en el inventario.
+
+- name: Preparar el directorio SSH del controlador
+  ansible.builtin.file:
+    path: "{{ lookup('ansible.builtin.env', 'HOME') }}/.ssh"
+    state: directory
+    mode: '0700'
+
+- name: Registrar la clave verificada en known_hosts del controlador
+  ansible.builtin.known_hosts:
+    path: "{{ lookup('ansible.builtin.env', 'HOME') }}/.ssh/known_hosts"
+    name: "{{ ('[' ~ (ansible_host | default(inventory_hostname)) ~ ']:' ~ (ansible_port | string)) if (ansible_port | default(22) | int != 22) else (ansible_host | default(inventory_hostname)) }}"
+    key: "{{ preflight_ssh_host_key_lines[0] }}"
+    state: present

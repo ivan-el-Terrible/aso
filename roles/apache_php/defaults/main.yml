@@ -1,2 +1,3 @@
-# Valores predeterminados de Apache y PHP.
-# Deben alimentar install.yml, configure.yml y las plantillas del rol.
+---
+# Usa el DocumentRoot que proporciona Apache en openSUSE.
+apache_php_document_root: /srv/www/htdocs

@@ -1,2 +1,12 @@
-# Usuarios y privilegios de MariaDB.
-# Debe depender de configure.yml y consumir variables de defaults/main.yml o group_vars/.
+---
+- name: Asegurar la cuenta SQL de la aplicación
+  community.mysql.mysql_user:
+    name: "{{ mariadb_app_user }}"
+    host: localhost
+    password: "{{ mariadb_app_password }}"
+    priv: "{{ mariadb_database }}.*:ALL"
+    state: present
+    login_user: root
+    login_unix_socket: "{{ mariadb_socket }}"
+    config_file: ''
+  no_log: true
